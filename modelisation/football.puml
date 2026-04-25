@@ -1,0 +1,56 @@
+@startuml
+
+class MatchFootball {
+  - id : int
+  - equipeDomicile : String
+  - equipeExterieure : String
+  - stade : String
+  - dateMatch : Date
+}
+
+class Supporter {
+  - id : int
+  - nom : String
+  - email : String
+  - equipeFavorite : String
+}
+
+class Ticket {
+  - id : int
+  - matchId : int
+  - prix : double
+  - categorie : String
+}
+
+class MatchDAO {
+  + getAllMatches()
+  + addMatch()
+  + updateMatch()
+  + deleteMatch()
+}
+
+class SupporterDAO {
+  + getAllSupporters()
+  + addSupporter()
+  + updateSupporter()
+  + deleteSupporter()
+}
+
+class TicketDAO {
+  + getAllTickets()
+}
+
+class DatabaseConnection {
+  + getConnection()
+}
+
+MatchDAO --> MatchFootball
+SupporterDAO --> Supporter
+TicketDAO --> Ticket
+MatchDAO --> DatabaseConnection
+SupporterDAO --> DatabaseConnection
+TicketDAO --> DatabaseConnection
+
+Ticket --> MatchFootball : match_id
+
+@enduml

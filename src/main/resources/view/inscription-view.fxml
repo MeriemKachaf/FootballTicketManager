@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.example.footballticketmanager.controller.InscriptionController"
+           styleClass="login-bg">
+
+    <VBox styleClass="login-card" spacing="0" maxWidth="440" alignment="CENTER">
+
+        <!-- Bande de couleur en haut -->
+        <HBox styleClass="login-card-accent"/>
+
+        <VBox spacing="12" alignment="CENTER">
+            <padding><Insets top="28" right="38" bottom="28" left="38"/></padding>
+
+            <!-- En-tête -->
+            <VBox spacing="5" alignment="CENTER">
+                <Label text="⚽" styleClass="login-icon"/>
+                <Label text="Football Ticket Manager" styleClass="login-title"/>
+                <Label text="Créer un nouveau compte" styleClass="login-subtitle"/>
+            </VBox>
+
+            <Separator styleClass="login-separator"/>
+
+            <!-- Nom et Prénom côte à côte -->
+            <GridPane hgap="12" vgap="5">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                </columnConstraints>
+
+                <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="👤  Nom" styleClass="login-field-label"/>
+                    <TextField fx:id="nomField" promptText="Votre nom" maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="👤  Prénom" styleClass="login-field-label"/>
+                    <TextField fx:id="prenomField" promptText="Votre prénom" maxWidth="Infinity"/>
+                </VBox>
+            </GridPane>
+
+            <!-- Email -->
+            <VBox spacing="5">
+                <Label text="📧  Adresse email" styleClass="login-field-label"/>
+                <TextField fx:id="emailField" promptText="exemple@email.com" maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Mot de passe -->
+            <VBox spacing="5">
+                <Label text="🔒  Mot de passe (min. 6 caractères)" styleClass="login-field-label"/>
+                <PasswordField fx:id="motDePasseField" promptText="Choisir un mot de passe" maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Confirmation -->
+            <VBox spacing="5">
+                <Label text="🔒  Confirmer le mot de passe" styleClass="login-field-label"/>
+                <PasswordField fx:id="confirmField" promptText="Répéter le mot de passe" maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Message erreur/succès -->
+            <Label fx:id="messageLabel" text="" wrapText="true" maxWidth="Infinity" managed="true"/>
+
+            <!-- Boutons -->
+            <Button text="  Créer mon compte  ✓" onAction="#sInscrire"
+                    maxWidth="Infinity" styleClass="button,action-button"/>
+
+            <Button text="← Retour à la connexion" onAction="#allerLogin"
+                    maxWidth="Infinity" styleClass="button,secondary-button"/>
+
+            <Label text="Football Ticket Manager © 2025" styleClass="login-footer"/>
+        </VBox>
+
+    </VBox>
+
+</StackPane>

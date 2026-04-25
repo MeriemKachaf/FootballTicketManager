@@ -1,0 +1,86 @@
+package com.example.footballticketmanager.controller;
+
+import com.example.footballticketmanager.HelloApplication;
+import com.example.footballticketmanager.dao.UtilisateurDAO;
+import com.example.footballticketmanager.model.Utilisateur;
+import com.example.footballticketmanager.util.PasswordUtils;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+
+public class InscriptionController {
+
+    @FXML private TextField nomField;
+    @FXML private TextField prenomField;
+    @FXML private TextField emailField;
+    @FXML private PasswordField motDePasseField;
+    @FXML private PasswordField confirmField;
+    @FXML private Label messageLabel;
+
+    private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
+
+    @FXML
+    public void sInscrire() {
+        String nom = nomField.getText().trim();
+        String prenom = prenomField.getText().trim();
+        String email = emailField.getText().trim();
+        String motDePasse = motDePasseField.getText();
+        String confirm = confirmField.getText();
+
+        if (nom.isEmpty() || prenom.isEmpty() || email.isEmpty()
+                || motDePasse.isEmpty() || confirm.isEmpty()) {
+            afficherMessage("Veuillez remplir tous les champs.", false);
+            return;
+        }
+
+        if (!motDePasse.equals(confirm)) {
+            afficherMessage("Les mots de passe ne correspondent pas.", false);
+            return;
+        }
+
+        if (motDePasse.length() < 6) {
+            afficherMessage("Le mot de passe doit faire au moins 6 caracteres.", false);
+            return;
+        }
+
+        if (utilisateurDAO.emailExiste(email)) {
+            afficherMessage("Cet email est deja utilise.", false);
+            return;
+        }
+
+        Utilisateur nouvel = new Utilisateur(nom, prenom, email, PasswordUtils.hasher(motDePasse), "user");
+
+        if (utilisateurDAO.ajouter(nouvel)) {
+            afficherMessage("Inscription reussie ! Vous pouvez vous connecter.", true);
+            viderChamps();
+        } else {
+            afficherMessage("Erreur lors de l'inscription. Reessayez.", false);
+        }
+    }
+
+    @FXML
+    public void allerLogin() {
+        try {
+            HelloApplication.changerScene(nomField, "login-view.fxml", "Connexion", 450, 480);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void afficherMessage(String message, boolean succes) {
+        messageLabel.setText(message);
+        messageLabel.getStyleClass().removeAll("error-label", "success-label");
+        messageLabel.getStyleClass().add(succes ? "success-label" : "error-label");
+        messageLabel.setVisible(!message.isEmpty());
+        messageLabel.setManaged(!message.isEmpty());
+    }
+
+    private void viderChamps() {
+        nomField.clear();
+        prenomField.clear();
+        emailField.clear();
+        motDePasseField.clear();
+        confirmField.clear();
+    }
+}

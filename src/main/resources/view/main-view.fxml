@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.footballticketmanager.controller.MainController"
+            stylesheets="@style.css">
+
+    <!-- ===== TOPBAR ===== -->
+    <top>
+        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="14">
+            <padding><Insets top="12" right="22" bottom="12" left="22"/></padding>
+            <Label text="⚽" styleClass="topbar-icon"/>
+            <Label text="Football Manager" styleClass="topbar-brand"/>
+            <Label text="|" styleClass="topbar-sep"/>
+            <Label fx:id="welcomeLabel" styleClass="welcome-label"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="ADMIN" styleClass="topbar-badge" fx:id="adminBadge" visible="false" managed="false"/>
+            <Button text="⏻  Déconnexion" onAction="#seDeconnecter" styleClass="button,danger-button"/>
+        </HBox>
+    </top>
+
+    <!-- ===== SIDEBAR ===== -->
+    <left>
+        <VBox spacing="0" styleClass="sidebar">
+
+            <!-- Logo zone -->
+            <VBox styleClass="sidebar-logo-area" alignment="CENTER_LEFT" spacing="2">
+                <Label text="🏟  Navigation" styleClass="topbar-brand"/>
+                <Label text="Gérez matchs, tickets &amp; supporters" styleClass="welcome-label"/>
+            </VBox>
+
+            <VBox spacing="4" VBox.vgrow="ALWAYS">
+                <padding><Insets top="16" right="10" bottom="16" left="10"/></padding>
+
+                <Label text="MENU" styleClass="sidebar-section"/>
+                <Button text="🏆  Matchs"          onAction="#afficherMatchs"      styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="🎫  Mes réservations" onAction="#chargerReservations"  styleClass="nav-button" maxWidth="Infinity"/>
+
+                <VBox fx:id="navAdmin" spacing="4">
+                    <Label text="ADMINISTRATION" styleClass="sidebar-section"/>
+                    <Button text="👥  Supporters"  onAction="#afficherSupporters" styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="🎟  Tickets"     onAction="#afficherTickets"    styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="🏟  Stades"      onAction="#afficherStades"     styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="💳  Paiements"   onAction="#chargerPaiements"   styleClass="nav-button" maxWidth="Infinity"/>
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <!-- Pied de sidebar -->
+            <VBox styleClass="sidebar-footer" spacing="6">
+                <Button text="↺  Réinitialiser" onAction="#resetFields" styleClass="nav-button" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- ===== CONTENU PRINCIPAL ===== -->
+    <center>
+        <BorderPane>
+
+            <!-- ZONE HAUTE : scrollable (formulaires + stats + reservation) -->
+            <top>
+                <ScrollPane fitToWidth="true" maxHeight="430" styleClass="scroll-top" hbarPolicy="NEVER">
+                    <VBox spacing="16">
+                        <padding><Insets top="20" right="20" bottom="12" left="20"/></padding>
+
+                        <!-- TABLEAU DE BORD (admin) -->
+                        <VBox fx:id="statsPanel" spacing="10">
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <VBox spacing="2">
+                                    <Label text="Tableau de bord" styleClass="section-title"/>
+                                    <Label text="Vue d'ensemble de l'activité" styleClass="section-subtitle"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10">
+                                <VBox styleClass="stat-card stat-blue"   alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
+                                    <Label text="🏆" styleClass="stat-icon"/>
+                                    <Label text="Matchs"       styleClass="stat-label"/>
+                                    <Label fx:id="statMatchs"  text="0" styleClass="stat-number"/>
+                                </VBox>
+                                <VBox styleClass="stat-card stat-green"  alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
+                                    <Label text="👥" styleClass="stat-icon"/>
+                                    <Label text="Supporters"      styleClass="stat-label"/>
+                                    <Label fx:id="statSupporters" text="0" styleClass="stat-number"/>
+                                </VBox>
+                                <VBox styleClass="stat-card stat-orange" alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
+                                    <Label text="🎟" styleClass="stat-icon"/>
+                                    <Label text="Tickets"      styleClass="stat-label"/>
+                                    <Label fx:id="statTickets" text="0" styleClass="stat-number"/>
+                                </VBox>
+                                <VBox styleClass="stat-card stat-purple" alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
+                                    <Label text="📋" styleClass="stat-icon"/>
+                                    <Label text="Réservations"      styleClass="stat-label"/>
+                                    <Label fx:id="statReservations" text="0" styleClass="stat-number"/>
+                                </VBox>
+                                <VBox styleClass="stat-card stat-teal"   alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
+                                    <Label text="💰" styleClass="stat-icon"/>
+                                    <Label text="Chiffre d'affaires" styleClass="stat-label"/>
+                                    <Label fx:id="statRevenu"        text="0 €" styleClass="stat-number-sm"/>
+                                </VBox>
+                                <VBox styleClass="stat-card stat-yellow" alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
+                                    <Label text="⏳" styleClass="stat-icon"/>
+                                    <Label text="En attente"     styleClass="stat-label"/>
+                                    <Label fx:id="statEnAttente" text="0" styleClass="stat-number"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <!-- SECTION ADMIN (CRUD) -->
+                        <VBox fx:id="pannelAdmin" spacing="14">
+
+                            <!-- Matchs -->
+                            <VBox spacing="10" styleClass="panel">
+                                <HBox styleClass="panel-header" alignment="CENTER_LEFT">
+                                    <Label text="🏆  Gestion des Matchs" styleClass="panel-title"/>
+                                </HBox>
+                                <GridPane hgap="14" vgap="8">
+                                    <columnConstraints>
+                                        <ColumnConstraints minWidth="80"/>
+                                        <ColumnConstraints hgrow="ALWAYS"/>
+                                        <ColumnConstraints minWidth="80"/>
+                                        <ColumnConstraints hgrow="ALWAYS"/>
+                                    </columnConstraints>
+                                    <Label text="Domicile :"   styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="domicileField"   promptText="Ex: PSG"
+                                               GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                    <Label text="Extérieure :" styleClass="field-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="exterieureField" promptText="Ex: OM"
+                                               GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                                    <Label text="Stade :"      styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                    <ComboBox fx:id="stadeCombo" promptText="Choisir un stade"
+                                              GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity"/>
+                                    <Label text="Date :"       styleClass="field-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                                    <TextField fx:id="dateField" promptText="YYYY-MM-DD"
+                                               GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                                </GridPane>
+                                <HBox spacing="8">
+                                    <Button text="✚  Ajouter"           onAction="#ajouterMatch"            styleClass="button,action-button"/>
+                                    <Button text="⤵  Charger sélection" onAction="#chargerMatchSelectionne"  styleClass="button,secondary-button"/>
+                                    <Button text="✎  Modifier"          onAction="#modifierMatch"            styleClass="button,action-button"/>
+                                    <Button text="✕  Supprimer"         onAction="#supprimerMatch"           styleClass="button,danger-button"/>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Supporters -->
+                            <VBox spacing="10" styleClass="panel">
+                                <HBox styleClass="panel-header" alignment="CENTER_LEFT">
+                                    <Label text="👥  Gestion des Supporters" styleClass="panel-title"/>
+                                </HBox>
+                                <GridPane hgap="14" vgap="8">
+                                    <columnConstraints>
+                                        <ColumnConstraints minWidth="80"/>
+                                        <ColumnConstraints hgrow="ALWAYS"/>
+                                        <ColumnConstraints minWidth="80"/>
+                                        <ColumnConstraints hgrow="ALWAYS"/>
+                                    </columnConstraints>
+                                    <Label text="Nom :"    styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="nomSupporterField"   promptText="Ex: Dupont"
+                                               GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                    <Label text="Email :"  styleClass="field-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                                    <TextField fx:id="emailSupporterField" promptText="dupont@email.com"
+                                               GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                                    <Label text="Équipe :" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                    <TextField fx:id="equipeFavoriteField" promptText="Ex: PSG"
+                                               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                </GridPane>
+                                <HBox spacing="8">
+                                    <Button text="✚  Ajouter"           onAction="#ajouterSupporter"            styleClass="button,action-button"/>
+                                    <Button text="⤵  Charger sélection" onAction="#chargerSupporterSelectionne"  styleClass="button,secondary-button"/>
+                                    <Button text="✎  Modifier"          onAction="#modifierSupporter"            styleClass="button,action-button"/>
+                                    <Button text="✕  Supprimer"         onAction="#supprimerSupporter"           styleClass="button,danger-button"/>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Stades -->
+                            <VBox spacing="10" styleClass="panel">
+                                <HBox styleClass="panel-header" alignment="CENTER_LEFT">
+                                    <Label text="🏟  Gestion des Stades" styleClass="panel-title"/>
+                                </HBox>
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <TextField fx:id="nomStadeField"      promptText="Nom du stade" prefWidth="200" HBox.hgrow="ALWAYS"/>
+                                    <TextField fx:id="villeStadeField"    promptText="Ville"        prefWidth="140"/>
+                                    <TextField fx:id="capaciteStadeField" promptText="Capacité"     prefWidth="110"/>
+                                    <Button text="✚  Ajouter"   onAction="#ajouterStade"   styleClass="button,action-button"/>
+                                    <Button text="✕  Supprimer" onAction="#supprimerStade"  styleClass="button,danger-button"/>
+                                </HBox>
+                            </VBox>
+
+                        </VBox>
+                        <!-- FIN SECTION ADMIN -->
+
+                        <!-- RÉSERVATIONS -->
+                        <VBox spacing="10" styleClass="panel">
+                            <HBox styleClass="panel-header" alignment="CENTER_LEFT">
+                                <Label text="🎫  Réservations" styleClass="panel-title"/>
+                            </HBox>
+                            <HBox fx:id="ligneSupporterCombo" spacing="12" alignment="CENTER_LEFT">
+                                <Label text="Supporter :" styleClass="field-label"/>
+                                <ComboBox fx:id="supporterCombo" prefWidth="230" promptText="Choisir un supporter"/>
+                                <Label text="Ticket :" styleClass="field-label"/>
+                                <ComboBox fx:id="ticketCombo" prefWidth="320" promptText="Choisir un ticket"/>
+                            </HBox>
+                            <HBox fx:id="ligneTicketCombo" spacing="12" alignment="CENTER_LEFT" visible="false" managed="false"/>
+                            <VBox fx:id="ligneChoixUser" spacing="8" visible="false" managed="false">
+                                <HBox spacing="12" alignment="CENTER_LEFT">
+                                    <Label text="Match :" styleClass="field-label"/>
+                                    <ComboBox fx:id="matchComboUser" prefWidth="350"
+                                              promptText="Choisir un match"
+                                              onAction="#onMatchUserSelectionne"/>
+                                </HBox>
+                                <HBox spacing="12" alignment="CENTER_LEFT">
+                                    <Label text="Catégorie :" styleClass="field-label"/>
+                                    <ComboBox fx:id="categorieCombo" prefWidth="270"
+                                              promptText="Choisir une catégorie"/>
+                                </HBox>
+                            </VBox>
+                            <HBox spacing="8">
+                                <Button text="✚  Réserver"              onAction="#ajouterReservation"   styleClass="button,action-button"/>
+                                <Button text="✕  Supprimer réservation" onAction="#supprimerReservation" styleClass="button,danger-button"/>
+                            </HBox>
+                        </VBox>
+
+                    </VBox>
+                </ScrollPane>
+            </top>
+
+            <!-- ZONE BASSE : tableau toujours visible -->
+            <center>
+                <VBox styleClass="table-container">
+
+                    <!-- Barre de recherche / en-tête tableau -->
+                    <HBox styleClass="table-search-bar" alignment="CENTER_LEFT" spacing="14">
+                        <Label fx:id="tableTitle" text="Résultats" styleClass="panel-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <TextField fx:id="searchField" promptText="🔍  Rechercher..." styleClass="search-field" prefWidth="230"/>
+                    </HBox>
+
+                    <VBox spacing="4" VBox.vgrow="ALWAYS">
+                        <padding><Insets top="8" right="18" bottom="18" left="18"/></padding>
+                        <Label text="Sélectionnez une ligne avant Charger / Supprimer / Modifier."
+                               styleClass="result-info"/>
+                        <TableView fx:id="tableView" VBox.vgrow="ALWAYS" styleClass="result-table">
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                        </TableView>
+                    </VBox>
+
+                </VBox>
+            </center>
+
+            <!-- STATUS BAR -->
+            <bottom>
+                <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="16">
+                    <Label fx:id="statusLabel" text="Prêt" styleClass="status-text"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Football Ticket Manager © 2025" styleClass="status-text"/>
+                </HBox>
+            </bottom>
+
+        </BorderPane>
+    </center>
+
+</BorderPane>
