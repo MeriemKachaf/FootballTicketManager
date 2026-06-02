@@ -63,6 +63,16 @@ public class MainController {
     @FXML private ComboBox<String> matchComboUser;
     @FXML private ComboBox<String> categorieCombo;
 
+    // --- Panneaux de formulaires ---
+    @FXML private VBox panneauMatchs;
+    @FXML private VBox panneauSupporters;
+    @FXML private VBox panneauStades;
+    @FXML private VBox panneauReservations;
+
+    // --- Barre tableau ---
+    @FXML private Label tableTitle;
+    @FXML private TextField searchField;
+
     // --- Tableau de resultats (remplace ListView) ---
     @FXML private TableView<String[]> tableView;
 
@@ -139,6 +149,12 @@ public class MainController {
         statReservations.setText(String.valueOf(reservationDAO.getAllReservations().size()));
         statRevenu.setText(String.format("%.0f €", paiementDAO.getTotalRevenu()));
         statEnAttente.setText(String.valueOf(paiementDAO.countEnAttente()));
+    }
+
+    private void montrerPanneaux(VBox... aAfficher) {
+        VBox[] tous = {panneauMatchs, panneauSupporters, panneauStades, panneauReservations};
+        for (VBox p : tous) { p.setVisible(false); p.setManaged(false); }
+        for (VBox p : aAfficher) { p.setVisible(true); p.setManaged(true); }
     }
 
     // Methode centrale : affiche les donnees dans le tableau
@@ -275,6 +291,7 @@ public class MainController {
     @FXML
     public void afficherMatchs() {
         try {
+            montrerPanneaux(panneauMatchs);
             afficherMatchsDansTable(matchDAO.getAllMatches());
         } catch (Exception e) {
             e.printStackTrace();
@@ -384,6 +401,7 @@ public class MainController {
     @FXML
     public void afficherSupporters() {
         try {
+            montrerPanneaux(panneauSupporters);
             List<Supporter> supporters = supporterDAO.getAllSupporters();
             String[] cols = {"ID", "Nom", "Email", "Equipe Favorite"};
             List<String[]> rows = new ArrayList<>();
@@ -484,6 +502,7 @@ public class MainController {
     @FXML
     public void afficherTickets() {
         try {
+            montrerPanneaux();
             List<Ticket> tickets = ticketDAO.getAllTickets();
             String[] cols = {"ID", "Match ID", "Categorie", "Prix (€)"};
             List<String[]> rows = new ArrayList<>();
@@ -506,6 +525,7 @@ public class MainController {
     @FXML
     public void afficherStades() {
         try {
+            montrerPanneaux(panneauStades);
             List<Stade> stades = stadeDAO.getAllStades();
             String[] cols = {"ID", "Nom", "Ville", "Capacite"};
             List<String[]> rows = new ArrayList<>();
@@ -569,6 +589,7 @@ public class MainController {
     @FXML
     public void chargerReservations() {
         try {
+            montrerPanneaux(panneauReservations);
             List<Reservation> reservations = Session.isAdmin()
                 ? reservationDAO.getAllReservations()
                 : reservationDAO.getReservationsBySupporterId(supporterIdConnecte);
@@ -675,6 +696,7 @@ public class MainController {
     @FXML
     public void chargerPaiements() {
         try {
+            montrerPanneaux();
             List<Paiement> paiements = paiementDAO.getAllPaiements();
             String[] cols = {"ID", "Supporter", "Match", "Montant (€)", "Mode", "Statut", "Date"};
             List<String[]> rows = new ArrayList<>();

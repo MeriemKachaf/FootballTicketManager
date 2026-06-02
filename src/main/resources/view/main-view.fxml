@@ -113,7 +113,7 @@
                         <VBox fx:id="pannelAdmin" spacing="14">
 
                             <!-- Matchs -->
-                            <VBox spacing="10" styleClass="panel">
+                            <VBox fx:id="panneauMatchs" spacing="10" styleClass="panel">
                                 <HBox styleClass="panel-header" alignment="CENTER_LEFT">
                                     <Label text="🏆  Gestion des Matchs" styleClass="panel-title"/>
                                 </HBox>
@@ -146,7 +146,7 @@
                             </VBox>
 
                             <!-- Supporters -->
-                            <VBox spacing="10" styleClass="panel">
+                            <VBox fx:id="panneauSupporters" spacing="10" styleClass="panel">
                                 <HBox styleClass="panel-header" alignment="CENTER_LEFT">
                                     <Label text="👥  Gestion des Supporters" styleClass="panel-title"/>
                                 </HBox>
@@ -176,7 +176,7 @@
                             </VBox>
 
                             <!-- Stades -->
-                            <VBox spacing="10" styleClass="panel">
+                            <VBox fx:id="panneauStades" spacing="10" styleClass="panel">
                                 <HBox styleClass="panel-header" alignment="CENTER_LEFT">
                                     <Label text="🏟  Gestion des Stades" styleClass="panel-title"/>
                                 </HBox>
@@ -193,7 +193,7 @@
                         <!-- FIN SECTION ADMIN -->
 
                         <!-- RÉSERVATIONS -->
-                        <VBox spacing="10" styleClass="panel">
+                        <VBox fx:id="panneauReservations" spacing="10" styleClass="panel">
                             <HBox styleClass="panel-header" alignment="CENTER_LEFT">
                                 <Label text="🎫  Réservations" styleClass="panel-title"/>
                             </HBox>
