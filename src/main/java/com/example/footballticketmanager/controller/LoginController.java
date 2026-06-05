@@ -48,7 +48,7 @@ public class LoginController {
     @FXML
     public void allerInscription() {
         try {
-            HelloApplication.changerScene(emailField, "inscription-view.fxml", "Créer un compte", 480, 560);
+            HelloApplication.changerScene(emailField, "inscription-view.fxml", "Créer un compte", 480, 590);
         } catch (Exception e) {
             e.printStackTrace();
         }

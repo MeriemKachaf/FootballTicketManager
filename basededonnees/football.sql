@@ -1,6 +1,11 @@
 CREATE DATABASE IF NOT EXISTS football_manager;
 USE football_manager;
 
+-- Si la base existe déjà, exécuter ces lignes :
+-- ALTER TABLE stade  ADD COLUMN IF NOT EXISTS localisation VARCHAR(200) DEFAULT '';
+-- ALTER TABLE ticket ADD COLUMN IF NOT EXISTS quantite     INT NOT NULL DEFAULT 100;
+-- ALTER TABLE ticket ADD COLUMN IF NOT EXISTS zone         VARCHAR(100) DEFAULT '';
+
 -- Suppression dans le bon ordre (respect des cles etrangeres)
 DROP TABLE IF EXISTS paiement;
 DROP TABLE IF EXISTS reservation;
@@ -26,10 +31,11 @@ CREATE TABLE utilisateur (
 -- TABLE : stade
 -- =============================================
 CREATE TABLE stade (
-    id       INT AUTO_INCREMENT PRIMARY KEY,
-    nom      VARCHAR(100) NOT NULL,
-    ville    VARCHAR(100) NOT NULL,
-    capacite INT NOT NULL
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    nom          VARCHAR(100) NOT NULL,
+    ville        VARCHAR(100) NOT NULL,
+    capacite     INT NOT NULL,
+    localisation VARCHAR(200) DEFAULT ''
 );
 
 -- =============================================
@@ -64,7 +70,9 @@ CREATE TABLE ticket (
     id        INT AUTO_INCREMENT PRIMARY KEY,
     match_id  INT NOT NULL,
     prix      DOUBLE NOT NULL,
-    categorie VARCHAR(50) NOT NULL,
+    categorie VARCHAR(50)  NOT NULL,
+    zone      VARCHAR(100) DEFAULT '',
+    quantite  INT NOT NULL DEFAULT 100,
     CONSTRAINT fk_ticket_match
         FOREIGN KEY (match_id) REFERENCES match_football(id)
         ON DELETE CASCADE ON UPDATE CASCADE
@@ -98,3 +106,58 @@ CREATE TABLE paiement (
     CONSTRAINT fk_paie_resa
         FOREIGN KEY (reservation_id) REFERENCES reservation(id) ON DELETE CASCADE
 );
+
+-- =============================================
+-- DONNEES INITIALES
+-- =============================================
+
+-- Comptes (mot de passe hashé SHA-256)
+-- admin@football.com / admin123
+-- user@football.com  / user123
+INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) VALUES
+('Admin',   'Système', 'admin@football.com', SHA2('admin123', 256), 'admin'),
+('Martin',  'Sophie',  'user@football.com',  SHA2('user123',  256), 'user');
+
+-- Stades
+INSERT INTO stade (nom, ville, capacite, localisation) VALUES
+('Parc des Princes',   'Paris',       48583, '24 Rue du Commandant Guilbaud, 75016 Paris'),
+('Orange Vélodrome',   'Marseille',   67394, '3 Boulevard Michelet, 13008 Marseille'),
+('Stade de France',    'Saint-Denis', 81338, 'ZAC du Cornillon Nord, 93216 Saint-Denis'),
+('Allianz Arena',      'Munich',      75024, 'Werner-Heisenberg-Allee 25, 80939 München'),
+('Santiago Bernabéu',  'Madrid',      81044, 'Av. de Concha Espina, 1, 28036 Madrid');
+
+-- Matchs
+INSERT INTO match_football (equipe_domicile, equipe_exterieure, stade_id, date_match) VALUES
+('PSG',          'OM',        1, '2026-09-15'),
+('PSG',          'Lyon',      1, '2026-10-05'),
+('OM',           'Lyon',      2, '2026-09-28'),
+('Real Madrid',  'Barcelona', 5, '2026-10-19'),
+('Bayern Munich','Dortmund',  4, '2026-11-02'),
+('PSG',          'Real Madrid',3,'2026-11-25');
+
+-- Tickets : 3 catégories par match
+INSERT INTO ticket (match_id, prix, categorie, zone, quantite) VALUES
+-- Match 1 : PSG vs OM
+(1,  25.00, 'Tribune',  'Virage Nord',          500),
+(1,  75.00, 'Loge',     'Tribune Officielle',   200),
+(1, 150.00, 'VIP',      'Carré Or',              50),
+-- Match 2 : PSG vs Lyon
+(2,  20.00, 'Tribune',  'Virage Nord',          500),
+(2,  60.00, 'Loge',     'Tribune Officielle',   200),
+(2, 120.00, 'VIP',      'Carré Or',              50),
+-- Match 3 : OM vs Lyon
+(3,  20.00, 'Tribune',  'Virage Massilia',      600),
+(3,  55.00, 'Loge',     'Tribune Jean Bouin',   150),
+(3, 100.00, 'VIP',      'Loge Présidentielle',   30),
+-- Match 4 : Real Madrid vs Barcelona
+(4,  80.00, 'Tribune',  'Fondo Norte',         1000),
+(4, 200.00, 'Loge',     'Tribune Principal',    500),
+(4, 400.00, 'VIP',      'Palco VIP',            100),
+-- Match 5 : Bayern Munich vs Dortmund
+(5,  50.00, 'Tribune',  'Südkurve',             500),
+(5, 130.00, 'Loge',     'Haupttribüne',         300),
+(5, 250.00, 'VIP',      'Business Club',         80),
+-- Match 6 : PSG vs Real Madrid
+(6,  60.00, 'Tribune',  'Virage Nord',          800),
+(6, 150.00, 'Loge',     'Tribune Officielle',   300),
+(6, 300.00, 'VIP',      'Carré Or',              60);

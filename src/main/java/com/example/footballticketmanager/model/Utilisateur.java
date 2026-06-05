@@ -32,4 +32,8 @@ public class Utilisateur {
     public String getEmail() { return email; }
     public String getMotDePasse() { return motDePasse; }
     public String getRole() { return role; }
+
+    public void setNom(String nom) { this.nom = nom; }
+    public void setPrenom(String prenom) { this.prenom = prenom; }
+    public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
 }

@@ -66,4 +66,52 @@ public class UtilisateurDAO {
         }
         return false;
     }
+
+    public boolean updateProfil(int id, String nom, String prenom) {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            if (conn == null) return false;
+            PreparedStatement ps = conn.prepareStatement(
+                "UPDATE utilisateur SET nom = ?, prenom = ? WHERE id = ?"
+            );
+            ps.setString(1, nom);
+            ps.setString(2, prenom);
+            ps.setInt(3, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateMotDePasse(int id, String nouveauHash) {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            if (conn == null) return false;
+            PreparedStatement ps = conn.prepareStatement(
+                "UPDATE utilisateur SET mot_de_passe = ? WHERE id = ?"
+            );
+            ps.setString(1, nouveauHash);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean deleteUtilisateur(int id) {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            if (conn == null) return false;
+            PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM utilisateur WHERE id = ?"
+            );
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

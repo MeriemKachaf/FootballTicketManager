@@ -16,8 +16,11 @@ public class StadeDAO {
             if (conn == null) return list;
             ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM stade");
             while (rs.next()) {
-                list.add(new Stade(rs.getInt("id"), rs.getString("nom"),
-                    rs.getString("ville"), rs.getInt("capacite")));
+                list.add(new Stade(
+                    rs.getInt("id"), rs.getString("nom"),
+                    rs.getString("ville"), rs.getInt("capacite"),
+                    rs.getString("localisation")
+                ));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -30,11 +33,12 @@ public class StadeDAO {
             Connection conn = DatabaseConnection.getConnection();
             if (conn == null) return false;
             PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO stade (nom, ville, capacite) VALUES (?, ?, ?)"
+                "INSERT INTO stade (nom, ville, capacite, localisation) VALUES (?, ?, ?, ?)"
             );
             ps.setString(1, s.getNom());
             ps.setString(2, s.getVille());
             ps.setInt(3, s.getCapacite());
+            ps.setString(4, s.getLocalisation());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
