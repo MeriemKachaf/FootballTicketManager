@@ -44,12 +44,18 @@ public class InscriptionController {
             return;
         }
 
+        if (email.length() > 254 || !email.matches("^[a-zA-Z0-9][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+            afficherMessage("Format email invalide (ex: nom@domaine.com).", false);
+            return;
+        }
+        email = email.toLowerCase();
+
         if (utilisateurDAO.emailExiste(email)) {
             afficherMessage("Cet email est deja utilise.", false);
             return;
         }
 
-        Utilisateur nouvel = new Utilisateur(nom, prenom, email, PasswordUtils.hasher(motDePasse), "user");
+        Utilisateur nouvel = new Utilisateur(nom, prenom, email, PasswordUtils.hasher(motDePasse), "user", "");
 
         if (utilisateurDAO.ajouter(nouvel)) {
             afficherMessage("Inscription reussie ! Vous pouvez vous connecter.", true);
@@ -62,7 +68,7 @@ public class InscriptionController {
     @FXML
     public void allerLogin() {
         try {
-            HelloApplication.changerScene(nomField, "login-view.fxml", "Connexion", 450, 480);
+            HelloApplication.changerScene(nomField, "login-view.fxml", "Connexion", 700, 480);
         } catch (Exception e) {
             e.printStackTrace();
         }

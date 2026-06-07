@@ -13,7 +13,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
-        changerScene(null, "login-view.fxml", "Connexion", 450, 480);
+        changerScene(null, "login-view.fxml", "Connexion", 700, 480);
     }
 
     public static void changerScene(Node node, String fxml, String titre, int width, int height) throws Exception {

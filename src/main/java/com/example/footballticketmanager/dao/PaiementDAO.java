@@ -5,7 +5,9 @@ import com.example.footballticketmanager.model.Paiement;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PaiementDAO {
 
@@ -16,11 +18,11 @@ public class PaiementDAO {
             if (conn == null) return list;
             String sql =
                 "SELECT p.id, p.reservation_id, p.montant, p.date_paiement, p.mode_paiement, p.statut, " +
-                "s.nom AS supporter_nom, " +
+                "CONCAT(u.prenom, ' ', u.nom) AS utilisateur_nom, " +
                 "CONCAT(m.equipe_domicile, ' vs ', m.equipe_exterieure, ' - ', t.categorie) AS ticket_info " +
                 "FROM paiement p " +
                 "JOIN reservation r ON p.reservation_id = r.id " +
-                "JOIN supporter s ON r.supporter_id = s.id " +
+                "JOIN utilisateur u ON r.utilisateur_id = u.id " +
                 "JOIN ticket t ON r.ticket_id = t.id " +
                 "JOIN match_football m ON t.match_id = m.id " +
                 "ORDER BY p.id DESC";
@@ -30,7 +32,7 @@ public class PaiementDAO {
                     rs.getInt("id"), rs.getInt("reservation_id"),
                     rs.getDouble("montant"), rs.getDate("date_paiement"),
                     rs.getString("mode_paiement"), rs.getString("statut"),
-                    rs.getString("supporter_nom"), rs.getString("ticket_info")
+                    rs.getString("utilisateur_nom"), rs.getString("ticket_info")
                 ));
             }
         } catch (Exception e) {
@@ -80,6 +82,19 @@ public class PaiementDAO {
             if (rs.next()) return rs.getInt("nb");
         } catch (Exception e) { e.printStackTrace(); }
         return 0;
+    }
+
+    public Map<String, Integer> getStatutsRepartition() {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            if (conn == null) return map;
+            ResultSet rs = conn.createStatement().executeQuery(
+                "SELECT statut, COUNT(*) AS nb FROM paiement GROUP BY statut"
+            );
+            while (rs.next()) map.put(rs.getString("statut"), rs.getInt("nb"));
+        } catch (Exception e) { e.printStackTrace(); }
+        return map;
     }
 
     public boolean updateStatut(int id, String statut) {

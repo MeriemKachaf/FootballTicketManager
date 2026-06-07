@@ -10,18 +10,18 @@ public class Paiement {
     private Date datePaiement;
     private String modePaiement;
     private String statut;
-    private String supporterNom;
+    private String utilisateurNom;
     private String ticketInfo;
 
     public Paiement(int id, int reservationId, double montant, Date datePaiement,
-                    String modePaiement, String statut, String supporterNom, String ticketInfo) {
+                    String modePaiement, String statut, String utilisateurNom, String ticketInfo) {
         this.id = id;
         this.reservationId = reservationId;
         this.montant = montant;
         this.datePaiement = datePaiement;
         this.modePaiement = modePaiement;
         this.statut = statut;
-        this.supporterNom = supporterNom;
+        this.utilisateurNom = utilisateurNom;
         this.ticketInfo = ticketInfo;
     }
 
@@ -40,12 +40,12 @@ public class Paiement {
     public Date getDatePaiement() { return datePaiement; }
     public String getModePaiement() { return modePaiement; }
     public String getStatut() { return statut; }
-    public String getSupporterNom() { return supporterNom; }
+    public String getUtilisateurNom() { return utilisateurNom; }
     public String getTicketInfo() { return ticketInfo; }
 
     @Override
     public String toString() {
-        return id + " - " + supporterNom + " | " + ticketInfo
+        return id + " - " + utilisateurNom + " | " + ticketInfo
             + " | " + montant + "€ | " + modePaiement
             + " | Statut : " + statut.toUpperCase() + " | " + datePaiement;
     }

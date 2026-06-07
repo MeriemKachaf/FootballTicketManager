@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -10,10 +11,20 @@
 
     <!-- ===== TOPBAR ===== -->
     <top>
-        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="14">
-            <padding><Insets top="12" right="22" bottom="12" left="22"/></padding>
-            <Label text="⚽" styleClass="topbar-icon"/>
-            <Label text="Football Manager" styleClass="topbar-brand"/>
+        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="8" right="22" bottom="8" left="16"/></padding>
+
+            <!-- Logo badge petit -->
+            <StackPane styleClass="logo-badge-sm" alignment="CENTER">
+                <Label text="⚽" style="-fx-font-size:15px;"/>
+            </StackPane>
+
+            <!-- Nom de l'app en 2 lignes -->
+            <VBox spacing="0" alignment="CENTER_LEFT">
+                <Label text="Football Ticket" styleClass="app-name-top"/>
+                <Label text="Manager" styleClass="app-name-main"/>
+            </VBox>
+
             <Label text="|" styleClass="topbar-sep"/>
             <Label fx:id="welcomeLabel" styleClass="welcome-label"/>
             <Region HBox.hgrow="ALWAYS"/>
@@ -26,29 +37,42 @@
     <left>
         <VBox spacing="0" styleClass="sidebar">
 
-            <VBox styleClass="sidebar-logo-area" alignment="CENTER_LEFT" spacing="2">
-                <Label text="Navigation" styleClass="topbar-brand"/>
-                <Label text="Matchs, tickets &amp; réservations" styleClass="welcome-label"/>
+            <VBox styleClass="sidebar-logo-area" alignment="CENTER_LEFT" spacing="0">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <!-- Logo badge moyen -->
+                    <StackPane styleClass="logo-badge-md" alignment="CENTER">
+                        <VBox alignment="CENTER" spacing="1">
+                            <Label text="⚽" style="-fx-font-size:22px;"/>
+                            <Label text="FTM" styleClass="logo-badge-text"/>
+                        </VBox>
+                    </StackPane>
+                    <VBox spacing="2" alignment="CENTER_LEFT">
+                        <Label text="Football Ticket" styleClass="app-name-top"/>
+                        <Label text="Manager" styleClass="app-name-main"/>
+                    </VBox>
+                </HBox>
             </VBox>
 
             <VBox spacing="4" VBox.vgrow="ALWAYS">
                 <padding><Insets top="16" right="10" bottom="16" left="10"/></padding>
 
                 <Label text="MENU" styleClass="sidebar-section"/>
-                <Button text="Matchs"           onAction="#afficherMatchs"      styleClass="nav-button" maxWidth="Infinity"/>
-                <Button text="Mes réservations" onAction="#chargerReservations"  styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="🏆  Matchs"           onAction="#afficherMatchs"      styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="📋  Mes réservations"  onAction="#chargerReservations"  styleClass="nav-button" maxWidth="Infinity"/>
 
                 <VBox fx:id="navAdmin" spacing="4">
                     <Label text="ADMINISTRATION" styleClass="sidebar-section"/>
-                    <Button text="Supporters"    onAction="#afficherSupporters"  styleClass="nav-button" maxWidth="Infinity"/>
-                    <Button text="Tickets"       onAction="#afficherTickets"     styleClass="nav-button" maxWidth="Infinity"/>
-                    <Button text="Stades"        onAction="#afficherStades"      styleClass="nav-button" maxWidth="Infinity"/>
-                    <Button text="💳  Paiements" onAction="#chargerPaiements"    styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="👥  Utilisateurs"  onAction="#afficherSupporters"  styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="🎟  Tickets"        onAction="#afficherTickets"     styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="🏟  Stades"         onAction="#afficherStades"      styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="💳  Paiements"      onAction="#chargerPaiements"    styleClass="nav-button" maxWidth="Infinity"/>
                 </VBox>
 
                 <VBox fx:id="navUser" spacing="4" visible="false" managed="false">
                     <Label text="MON ESPACE" styleClass="sidebar-section"/>
                     <Button text="👤  Mon compte" onAction="#afficherMonCompte"
+                            styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="📋  Mes droits"  onAction="#afficherDroits"
                             styleClass="nav-button" maxWidth="Infinity"/>
                 </VBox>
 
@@ -87,7 +111,7 @@
                             </VBox>
                             <VBox styleClass="stat-card stat-green"  alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
                                 <Label text="👥" styleClass="stat-icon"/>
-                                <Label text="Supporters"      styleClass="stat-label"/>
+                                <Label text="Utilisateurs"    styleClass="stat-label"/>
                                 <Label fx:id="statSupporters" text="0" styleClass="stat-number"/>
                             </VBox>
                             <VBox styleClass="stat-card stat-orange" alignment="CENTER" HBox.hgrow="ALWAYS" minHeight="90" spacing="4">
@@ -110,6 +134,19 @@
                                 <Label text="En attente"     styleClass="stat-label"/>
                                 <Label fx:id="statEnAttente" text="0" styleClass="stat-number"/>
                             </VBox>
+                        </HBox>
+
+                        <!-- GRAPHIQUES -->
+                        <HBox spacing="16" alignment="CENTER_LEFT">
+                            <PieChart fx:id="pieStatuts" title="Statuts des paiements"
+                                      prefWidth="320" prefHeight="260" HBox.hgrow="ALWAYS"
+                                      animated="false"/>
+                            <BarChart fx:id="barMatchs" title="Billets vendus par match"
+                                      prefWidth="480" prefHeight="260" HBox.hgrow="ALWAYS"
+                                      animated="false" legendVisible="false">
+                                <xAxis><CategoryAxis/></xAxis>
+                                <yAxis><NumberAxis label="Billets"/></yAxis>
+                            </BarChart>
                         </HBox>
                     </VBox>
 
@@ -152,7 +189,7 @@
                         <!-- Supporters -->
                         <VBox fx:id="panneauSupporters" spacing="10" styleClass="panel">
                             <HBox styleClass="panel-header" alignment="CENTER_LEFT">
-                                <Label text="Gestion des Supporters" styleClass="panel-title"/>
+                                <Label text="Gestion des Utilisateurs" styleClass="panel-title"/>
                             </HBox>
                             <GridPane hgap="14" vgap="8">
                                 <columnConstraints>
@@ -287,6 +324,9 @@
                                 <Label text="Nom :" styleClass="field-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
                                 <TextField fx:id="compteNomField" promptText="Nouveau nom"
                                            GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                                <Label text="Équipe favorite :" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <TextField fx:id="compteEquipeField" promptText="Ex: PSG, OM, Real Madrid..."
+                                           GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="3"/>
                             </GridPane>
                             <Button text="Enregistrer les modifications" onAction="#modifierProfil" styleClass="button,action-button"/>
                         </VBox>
@@ -409,11 +449,13 @@
                         <HBox fx:id="btnAdminReservations" spacing="8">
                             <Button text="Créer la réservation" onAction="#ajouterReservation"  styleClass="button,action-button"/>
                             <Button text="Supprimer"            onAction="#supprimerReservation" styleClass="button,danger-button"/>
+                            <Button text="📄  Exporter PDF"     onAction="#exporterPDF"          styleClass="button,secondary-button"/>
                         </HBox>
                         <!-- Boutons Utilisateur -->
                         <HBox fx:id="btnUserReservations" spacing="8" visible="false" managed="false">
                             <Button text="Réserver maintenant" onAction="#ajouterReservation"    styleClass="button,action-button"/>
                             <Button text="Annuler réservation" onAction="#supprimerReservation"  styleClass="button,danger-button"/>
+                            <Button text="📄  Exporter PDF"    onAction="#exporterPDF"           styleClass="button,secondary-button"/>
                         </HBox>
                     </VBox>
 

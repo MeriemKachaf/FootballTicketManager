@@ -8,17 +8,46 @@
            fx:controller="com.example.footballticketmanager.controller.LoginController"
            styleClass="login-bg">
 
-    <VBox styleClass="login-card" spacing="0" maxWidth="400" alignment="CENTER">
+    <HBox styleClass="login-card" maxWidth="680" maxHeight="460" alignment="CENTER">
 
-        <!-- En-tête sombre -->
-        <VBox styleClass="login-card-header" alignment="CENTER" spacing="6">
-            <Label text="⚽" styleClass="login-icon-sm"/>
-            <Label text="Football Ticket Manager" styleClass="login-title-inv"/>
-            <Label text="Connectez-vous à votre compte" styleClass="login-subtitle-inv"/>
+        <!-- ===== PANNEAU GAUCHE — Branding ===== -->
+        <VBox styleClass="login-brand-panel" spacing="20" alignment="CENTER">
+
+            <!-- Badge logo -->
+            <StackPane styleClass="logo-badge-lg" alignment="CENTER">
+                <VBox alignment="CENTER" spacing="2">
+                    <Label text="⚽" style="-fx-font-size:44px;"/>
+                    <Label text="FTM" styleClass="logo-badge-text"/>
+                </VBox>
+            </StackPane>
+
+            <!-- Nom de l'app -->
+            <VBox spacing="4" alignment="CENTER">
+                <Label text="Football Ticket" styleClass="login-brand-title"
+                       style="-fx-font-size:20px;"/>
+                <Label text="Manager" styleClass="login-brand-subtitle"
+                       style="-fx-font-size:16px;"/>
+            </VBox>
+
+            <Separator styleClass="login-brand-sep" prefWidth="90"/>
+
+            <!-- Features -->
+            <VBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="✓  Tous les matchs en direct"  styleClass="login-brand-item"/>
+                <Label text="✓  Réservation instantanée"    styleClass="login-brand-item"/>
+                <Label text="✓  Meilleurs stades de France" styleClass="login-brand-item"/>
+                <Label text="✓  Paiement 100% sécurisé"     styleClass="login-brand-item"/>
+            </VBox>
+
         </VBox>
 
-        <!-- Formulaire -->
-        <VBox styleClass="login-card-body" spacing="13">
+        <!-- ===== PANNEAU DROIT — Formulaire ===== -->
+        <VBox styleClass="login-form-panel" spacing="14" HBox.hgrow="ALWAYS">
+
+            <Label text="Connexion" styleClass="login-form-title"/>
+            <Label text="Accédez à votre espace personnel" styleClass="login-form-subtitle"/>
+
+            <Region prefHeight="6"/>
 
             <VBox spacing="5">
                 <Label text="Adresse email" styleClass="login-field-label"/>
@@ -33,18 +62,21 @@
             <Label fx:id="messageLabel" text="" wrapText="true" maxWidth="Infinity"
                    visible="false" managed="false"/>
 
-            <Button text="Se connecter" onAction="#seConnecter"
+            <Button text="Se connecter  →" onAction="#seConnecter"
                     maxWidth="Infinity" styleClass="button,action-button"/>
 
-            <HBox alignment="CENTER" spacing="5">
+            <Separator styleClass="login-separator"/>
+
+            <HBox alignment="CENTER" spacing="6">
                 <Label text="Pas encore inscrit ?" styleClass="login-footer"/>
                 <Button text="Créer un compte" onAction="#allerInscription" styleClass="link-button"/>
             </HBox>
 
             <Label text="Football Ticket Manager © 2025" styleClass="login-footer"
                    alignment="CENTER" maxWidth="Infinity"/>
+
         </VBox>
 
-    </VBox>
+    </HBox>
 
 </StackPane>

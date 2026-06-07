@@ -1,11 +1,6 @@
 CREATE DATABASE IF NOT EXISTS football_manager;
 USE football_manager;
 
--- Si la base existe déjà, exécuter ces lignes :
--- ALTER TABLE stade  ADD COLUMN IF NOT EXISTS localisation VARCHAR(200) DEFAULT '';
--- ALTER TABLE ticket ADD COLUMN IF NOT EXISTS quantite     INT NOT NULL DEFAULT 100;
--- ALTER TABLE ticket ADD COLUMN IF NOT EXISTS zone         VARCHAR(100) DEFAULT '';
-
 -- Suppression dans le bon ordre (respect des cles etrangeres)
 DROP TABLE IF EXISTS paiement;
 DROP TABLE IF EXISTS reservation;
@@ -19,12 +14,13 @@ DROP TABLE IF EXISTS utilisateur;
 -- TABLE : utilisateur
 -- =============================================
 CREATE TABLE utilisateur (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
-    nom          VARCHAR(100) NOT NULL,
-    prenom       VARCHAR(100) NOT NULL,
-    email        VARCHAR(100) NOT NULL UNIQUE,
-    mot_de_passe VARCHAR(255) NOT NULL,
-    role         ENUM('admin', 'user') NOT NULL DEFAULT 'user'
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    nom             VARCHAR(100) NOT NULL,
+    prenom          VARCHAR(100) NOT NULL DEFAULT '',
+    email           VARCHAR(100) NOT NULL UNIQUE,
+    mot_de_passe    VARCHAR(255) NOT NULL,
+    role            ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+    equipe_favorite VARCHAR(100) DEFAULT ''
 );
 
 -- =============================================
@@ -40,7 +36,6 @@ CREATE TABLE stade (
 
 -- =============================================
 -- TABLE : match_football
--- stade_id est une cle etrangere vers stade(id)
 -- =============================================
 CREATE TABLE match_football (
     id                INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,16 +46,6 @@ CREATE TABLE match_football (
     CONSTRAINT fk_match_stade
         FOREIGN KEY (stade_id) REFERENCES stade(id)
         ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- =============================================
--- TABLE : supporter
--- =============================================
-CREATE TABLE supporter (
-    id              INT AUTO_INCREMENT PRIMARY KEY,
-    nom             VARCHAR(100) NOT NULL,
-    email           VARCHAR(100) NOT NULL,
-    equipe_favorite VARCHAR(100) NOT NULL
 );
 
 -- =============================================
@@ -83,18 +68,19 @@ CREATE TABLE ticket (
 -- =============================================
 CREATE TABLE reservation (
     id               INT AUTO_INCREMENT PRIMARY KEY,
-    supporter_id     INT NOT NULL,
+    utilisateur_id   INT NOT NULL,
     ticket_id        INT NOT NULL,
+    quantite         INT NOT NULL DEFAULT 1,
     date_reservation DATE NOT NULL,
-    CONSTRAINT fk_res_supporter
-        FOREIGN KEY (supporter_id) REFERENCES supporter(id) ON DELETE CASCADE,
+    CONSTRAINT chk_quantite CHECK (quantite BETWEEN 1 AND 3),
+    CONSTRAINT fk_res_utilisateur
+        FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE,
     CONSTRAINT fk_res_ticket
         FOREIGN KEY (ticket_id) REFERENCES ticket(id) ON DELETE CASCADE
 );
 
 -- =============================================
 -- TABLE : paiement
--- Cree automatiquement a chaque reservation
 -- =============================================
 CREATE TABLE paiement (
     id             INT AUTO_INCREMENT PRIMARY KEY,
@@ -114,9 +100,9 @@ CREATE TABLE paiement (
 -- Comptes (mot de passe hashé SHA-256)
 -- admin@football.com / admin123
 -- user@football.com  / user123
-INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) VALUES
-('Admin',   'Système', 'admin@football.com', SHA2('admin123', 256), 'admin'),
-('Martin',  'Sophie',  'user@football.com',  SHA2('user123',  256), 'user');
+INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role, equipe_favorite) VALUES
+('Admin',   'Système', 'admin@football.com', SHA2('admin123', 256), 'admin', ''),
+('Martin',  'Sophie',  'user@football.com',  SHA2('user123',  256), 'user',  'PSG');
 
 -- Stades
 INSERT INTO stade (nom, ville, capacite, localisation) VALUES

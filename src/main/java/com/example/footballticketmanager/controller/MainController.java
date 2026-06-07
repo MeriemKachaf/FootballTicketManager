@@ -5,14 +5,19 @@ import com.example.footballticketmanager.dao.*;
 import com.example.footballticketmanager.model.*;
 import com.example.footballticketmanager.session.Session;
 import com.example.footballticketmanager.util.PasswordUtils;
+import com.example.footballticketmanager.util.ExportService;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -97,6 +102,7 @@ public class MainController {
     @FXML private Label compteEmailLabel;
     @FXML private TextField comptePrenomField;
     @FXML private TextField compteNomField;
+    @FXML private TextField compteEquipeField;
     @FXML private PasswordField ancienMdpField;
     @FXML private PasswordField nouveauMdpField;
     @FXML private PasswordField confirmerMdpField;
@@ -122,11 +128,14 @@ public class MainController {
     @FXML private TextField searchField;
     @FXML private TableView<String[]> tableView;
 
+    // --- Graphiques ---
+    @FXML private PieChart pieStatuts;
+    @FXML private BarChart<String, Number> barMatchs;
+
     // --- Barre de statut ---
     @FXML private Label statusLabel;
 
     private final MatchDAO matchDAO = new MatchDAO();
-    private final SupporterDAO supporterDAO = new SupporterDAO();
     private final TicketDAO ticketDAO = new TicketDAO();
     private final ReservationDAO reservationDAO = new ReservationDAO();
     private final StadeDAO stadeDAO = new StadeDAO();
@@ -135,7 +144,6 @@ public class MainController {
 
     private int selectedMatchId = -1;
     private int selectedSupporterId = -1;
-    private int supporterIdConnecte = -1;
     private int selectedTicketId = -1;
     private List<String[]> currentTableData = new ArrayList<>();
     private List<MatchFootball> matchesDisponibles = new ArrayList<>();
@@ -188,16 +196,6 @@ public class MainController {
                 if (btnUserReservations  != null) { btnUserReservations.setVisible(true);   btnUserReservations.setManaged(true); }
 
                 try {
-                    Supporter s = supporterDAO.findByEmail(u.getEmail());
-                    if (s != null) {
-                        supporterIdConnecte = s.getId();
-                    } else {
-                        String nomComplet = (u.getPrenom() + " " + u.getNom()).trim();
-                        supporterDAO.addSupporter(new Supporter(nomComplet, u.getEmail(), ""));
-                        Supporter created = supporterDAO.findByEmail(u.getEmail());
-                        if (created != null) supporterIdConnecte = created.getId();
-                    }
-
                     matchesDisponibles = matchDAO.getAllMatches();
                     for (MatchFootball m : matchesDisponibles)
                         matchComboUser.getItems().add(
@@ -226,8 +224,8 @@ public class MainController {
         ticketCombo.getItems().clear();
         stadeCombo.getItems().clear();
         if (matchTicketCombo != null) matchTicketCombo.getItems().clear();
-        for (Supporter s : supporterDAO.getAllSupporters())
-            supporterCombo.getItems().add(s.getId() + " - " + s.getNom());
+        for (Utilisateur u : utilisateurDAO.getAllUsers())
+            supporterCombo.getItems().add(u.getId() + " - " + (u.getPrenom() + " " + u.getNom()).trim());
         ticketCombo.getItems().addAll(ticketDAO.getAllTicketsAvecMatch());
         for (Stade s : stadeDAO.getAllStades())
             stadeCombo.getItems().add(s.getId() + " - " + s.getNom());
@@ -242,11 +240,29 @@ public class MainController {
 
     private void chargerStats() {
         statMatchs.setText(String.valueOf(matchDAO.getAllMatches().size()));
-        statSupporters.setText(String.valueOf(supporterDAO.getAllSupporters().size()));
+        statSupporters.setText(String.valueOf(utilisateurDAO.countUsers()));
         statTickets.setText(String.valueOf(ticketDAO.getAllTickets().size()));
         statReservations.setText(String.valueOf(reservationDAO.getAllReservations().size()));
         statRevenu.setText(String.format("%.0f €", paiementDAO.getTotalRevenu()));
         statEnAttente.setText(String.valueOf(paiementDAO.countEnAttente()));
+
+        // PieChart — statuts des paiements
+        if (pieStatuts != null) {
+            pieStatuts.getData().clear();
+            paiementDAO.getStatutsRepartition().forEach((statut, nb) ->
+                pieStatuts.getData().add(new PieChart.Data(statut.toUpperCase() + " (" + nb + ")", nb))
+            );
+        }
+
+        // BarChart — billets vendus par match
+        if (barMatchs != null) {
+            barMatchs.getData().clear();
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            reservationDAO.getBilletsParMatch().forEach((match, nb) ->
+                series.getData().add(new XYChart.Data<>(match, nb))
+            );
+            barMatchs.getData().add(series);
+        }
     }
 
     private void montrerPanneaux(VBox... aAfficher) {
@@ -264,6 +280,7 @@ public class MainController {
         currentTableData = donnees;
         tableView.getColumns().clear();
         tableView.getItems().clear();
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         for (int i = 0; i < colonnes.length; i++) {
             final int idx = i;
             TableColumn<String[], String> col = new TableColumn<>(colonnes[idx]);
@@ -563,17 +580,17 @@ public class MainController {
     public void afficherSupporters() {
         try {
             montrerPanneaux(panneauSupporters);
-            tableTitle.setText("👥  Liste des Supporters");
-            List<Supporter> supporters = supporterDAO.getAllSupporters();
+            tableTitle.setText("👥  Liste des Utilisateurs");
+            List<Utilisateur> users = utilisateurDAO.getAllUsers();
             String[] cols = {"ID", "Nom", "Email", "Équipe Favorite"};
             List<String[]> rows = new ArrayList<>();
-            for (Supporter s : supporters)
-                rows.add(new String[]{String.valueOf(s.getId()), s.getNom(), s.getEmail(), s.getEquipeFavorite()});
+            for (Utilisateur u : users)
+                rows.add(new String[]{String.valueOf(u.getId()), (u.getPrenom() + " " + u.getNom()).trim(), u.getEmail(), u.getEquipeFavorite()});
             afficherDansTable(cols, rows);
-            setStatus("Supporters chargés avec succès.");
+            setStatus("Utilisateurs chargés avec succès.");
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible d'afficher les supporters.");
+            showAlert("Erreur", "Impossible d'afficher les utilisateurs.");
         }
     }
 
@@ -584,18 +601,22 @@ public class MainController {
             String email = emailSupporterField.getText().trim();
             String equipe = equipeFavoriteField.getText().trim();
             if (nom.isEmpty() || email.isEmpty() || equipe.isEmpty()) {
-                showAlert("Erreur", "Tous les champs supporter sont obligatoires.");
+                showAlert("Erreur", "Tous les champs sont obligatoires.");
                 return;
             }
-            supporterDAO.addSupporter(new Supporter(nom, email, equipe));
+            if (utilisateurDAO.emailExiste(email)) {
+                showAlert("Erreur", "Cet email est déjà utilisé.");
+                return;
+            }
+            utilisateurDAO.ajouter(new Utilisateur(nom, "", email, PasswordUtils.hasher("user123"), "user", equipe));
             clearSupporterFields();
             chargerComboBoxes();
             chargerStats();
             afficherSupporters();
-            setStatus("Supporter \"" + nom + "\" ajouté avec succès.");
+            setStatus("Utilisateur \"" + nom + "\" ajouté (mot de passe par défaut : user123).");
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible d'ajouter le supporter.");
+            showAlert("Erreur", "Impossible d'ajouter l'utilisateur.");
         }
     }
 
@@ -608,7 +629,7 @@ public class MainController {
             nomSupporterField.setText(row[1]);
             emailSupporterField.setText(row[2]);
             equipeFavoriteField.setText(row[3]);
-            setStatus("Supporter #" + selectedSupporterId + " chargé dans le formulaire.");
+            setStatus("Utilisateur #" + selectedSupporterId + " chargé dans le formulaire.");
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de charger le supporter.");
@@ -618,28 +639,28 @@ public class MainController {
     @FXML
     public void modifierSupporter() {
         try {
-            if (selectedSupporterId == -1) { showAlert("Erreur", "Chargez un supporter avant de le modifier."); return; }
+            if (selectedSupporterId == -1) { showAlert("Erreur", "Chargez un utilisateur avant de le modifier."); return; }
             String nom = nomSupporterField.getText().trim();
             String email = emailSupporterField.getText().trim();
             String equipe = equipeFavoriteField.getText().trim();
             if (nom.isEmpty() || email.isEmpty() || equipe.isEmpty()) {
-                showAlert("Erreur", "Tous les champs supporter sont obligatoires.");
+                showAlert("Erreur", "Tous les champs sont obligatoires.");
                 return;
             }
-            boolean ok = supporterDAO.updateSupporter(new Supporter(selectedSupporterId, nom, email, equipe));
+            boolean ok = utilisateurDAO.updateUtilisateur(selectedSupporterId, nom, email, equipe);
             if (ok) {
                 clearSupporterFields();
                 selectedSupporterId = -1;
                 chargerComboBoxes();
                 chargerStats();
                 afficherSupporters();
-                setStatus("Supporter modifié avec succès.");
+                setStatus("Utilisateur modifié avec succès.");
             } else {
                 showAlert("Erreur", "Aucune modification effectuée.");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible de modifier le supporter.");
+            showAlert("Erreur", "Impossible de modifier l'utilisateur.");
         }
     }
 
@@ -647,16 +668,16 @@ public class MainController {
     public void supprimerSupporter() {
         try {
             String[] row = getSelectedRow();
-            if (row == null) { showAlert("Erreur", "Sélectionnez un supporter à supprimer."); return; }
-            if (!confirmerSuppression("ce supporter")) return;
-            supporterDAO.deleteSupporter(Integer.parseInt(row[0]));
+            if (row == null) { showAlert("Erreur", "Sélectionnez un utilisateur à supprimer."); return; }
+            if (!confirmerSuppression("cet utilisateur")) return;
+            utilisateurDAO.deleteUtilisateur(Integer.parseInt(row[0]));
             chargerComboBoxes();
             chargerStats();
             afficherSupporters();
-            setStatus("Supporter supprimé.");
+            setStatus("Utilisateur supprimé.");
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible de supprimer le supporter.");
+            showAlert("Erreur", "Impossible de supprimer l'utilisateur.");
         }
     }
 
@@ -839,57 +860,82 @@ public class MainController {
 
             List<Reservation> reservations = Session.isAdmin()
                 ? reservationDAO.getAllReservations()
-                : reservationDAO.getReservationsBySupporterId(supporterIdConnecte);
+                : reservationDAO.getReservationsByUtilisateurId(Session.getUtilisateur().getId());
 
             currentTableData = new ArrayList<>();
             tableView.getColumns().clear();
             tableView.getItems().clear();
+            tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
             // Colonne ID cachée
             TableColumn<String[], String> colId = new TableColumn<>("ID");
             colId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[0]));
             colId.setVisible(false); colId.setMaxWidth(0); colId.setMinWidth(0); colId.setPrefWidth(0);
 
-            TableColumn<String[], String> colSupp = new TableColumn<>("Supporter");
+            TableColumn<String[], String> colSupp = new TableColumn<>("Utilisateur");
             colSupp.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[1]));
             colSupp.setPrefWidth(160);
 
             TableColumn<String[], String> colMatch = new TableColumn<>("Match");
             colMatch.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[2]));
-            colMatch.setPrefWidth(220);
+            colMatch.setPrefWidth(200);
 
             TableColumn<String[], String> colCat = new TableColumn<>("Catégorie");
             colCat.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[3]));
-            colCat.setPrefWidth(100);
+            colCat.setPrefWidth(90);
 
-            TableColumn<String[], String> colPrix = new TableColumn<>("Prix");
-            colPrix.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[4]));
+            TableColumn<String[], String> colQte = new TableColumn<>("Qté");
+            colQte.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[4]));
+            colQte.setPrefWidth(50);
+
+            TableColumn<String[], String> colPrix = new TableColumn<>("Total");
+            colPrix.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[5]));
             colPrix.setPrefWidth(80);
 
             TableColumn<String[], String> colDate = new TableColumn<>("Date");
-            colDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[5]));
-            colDate.setPrefWidth(110);
+            colDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[6]));
+            colDate.setPrefWidth(100);
+
+            TableColumn<String[], String> colStatut = new TableColumn<>("Paiement");
+            colStatut.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[7]));
+            colStatut.setPrefWidth(90);
+            colStatut.setCellFactory(col -> new TableCell<>() {
+                @Override
+                protected void updateItem(String statut, boolean empty) {
+                    super.updateItem(statut, empty);
+                    if (empty || statut == null) { setGraphic(null); setText(null); return; }
+                    Label badge = new Label(statut.toUpperCase());
+                    if ("paye".equals(statut))         badge.getStyleClass().add("badge-paye");
+                    else if ("annule".equals(statut))  badge.getStyleClass().add("badge-annule");
+                    else                               badge.getStyleClass().add("badge-attente");
+                    setGraphic(badge);
+                    setText(null);
+                }
+            });
 
             if (Session.isAdmin()) {
-                tableView.getColumns().addAll(colId, colSupp, colMatch, colCat, colPrix, colDate);
+                tableView.getColumns().addAll(colId, colSupp, colMatch, colCat, colQte, colPrix, colDate, colStatut);
             } else {
-                tableView.getColumns().addAll(colId, colMatch, colCat, colPrix, colDate);
+                tableView.getColumns().addAll(colId, colMatch, colCat, colQte, colPrix, colDate, colStatut);
             }
             tableView.setPlaceholder(new Label("Aucune réservation trouvée."));
 
             for (Reservation r : reservations) {
-                // ticketInfo format : "PSG vs OM - Tribune - 25.0€"
                 String[] parts = r.getTicketInfo().split(" - ");
-                String matchName  = parts.length > 0 ? parts[0].trim() : r.getTicketInfo();
-                String categorie  = parts.length > 1 ? parts[1].trim() : "";
-                String prix       = parts.length > 2 ? parts[2].trim() : "";
+                String matchName = parts.length > 0 ? parts[0].trim() : r.getTicketInfo();
+                String categorie = parts.length > 1 ? parts[1].trim() : "";
+                String prixUnit  = parts.length > 2 ? parts[2].replace("€", "").trim() : "0";
+                double total = 0;
+                try { total = Double.parseDouble(prixUnit) * r.getQuantite(); } catch (Exception ignored) {}
                 String[] row = new String[]{
                     String.valueOf(r.getId()),
-                    r.getSupporterNom() != null ? r.getSupporterNom() : "",
+                    r.getUtilisateurNom() != null ? r.getUtilisateurNom() : "",
                     matchName,
                     categorie,
-                    prix,
-                    r.getDateReservation() != null ? r.getDateReservation().toString() : ""
+                    String.valueOf(r.getQuantite()),
+                    String.format("%.2f €", total),
+                    r.getDateReservation() != null ? r.getDateReservation().toString() : "",
+                    r.getStatutPaiement() != null ? r.getStatutPaiement() : "en_attente"
                 };
                 currentTableData.add(row);
                 tableView.getItems().add(row);
@@ -1033,30 +1079,73 @@ public class MainController {
                 String[] parts = ticketItem.split(" - ");
                 montant = Double.parseDouble(parts[parts.length - 1].replace("€", ""));
             } else {
-                if (supporterIdConnecte == -1) {
-                    showAlert("Erreur", "Votre compte n'est pas lié à un profil supporter. Contactez un administrateur.");
-                    return;
-                }
                 if (selectedTicketId == -1) {
                     showAlert("Erreur", "Sélectionnez un match puis une catégorie de ticket.");
                     return;
                 }
-                // Vérification de disponibilité
                 int disponible = ticketDAO.getDisponible(selectedTicketId);
                 if (disponible <= 0) {
-                    showAlert("Complet", "Il n'y a plus de places disponibles pour cette catégorie. Choisissez-en une autre.");
+                    showAlert("Complet", "Il n'y a plus de places disponibles pour cette catégorie.");
                     return;
                 }
-                supporterId = supporterIdConnecte;
+                supporterId = Session.getUtilisateur().getId();
                 ticketId = selectedTicketId;
                 Ticket ticketChoisi = null;
                 for (Ticket t : ticketsMatch) {
                     if (t.getId() == selectedTicketId) { ticketChoisi = t; break; }
                 }
                 montant = ticketChoisi != null ? ticketChoisi.getPrix() : 0.0;
+
+                // Vérifier combien de tickets il a déjà pour ce match
+                int dejaReserve = reservationDAO.getTotalParMatch(supporterId, ticketChoisi != null ? ticketChoisi.getMatchId() : -1);
+                int reste = 3 - dejaReserve;
+                if (reste <= 0) {
+                    showAlert("Limite atteinte", "Vous avez déjà réservé 3 tickets pour ce match (limite maximale).");
+                    return;
+                }
+
+                // Demander la quantité (max = min entre reste autorisé et places disponibles)
+                int maxChoix = Math.min(reste, Math.min(disponible, 3));
+                List<String> choixQte = new ArrayList<>();
+                for (int i = 1; i <= maxChoix; i++) choixQte.add(String.valueOf(i));
+                ChoiceDialog<String> dialogQte = new ChoiceDialog<>(choixQte.get(0), choixQte);
+                dialogQte.setTitle("Nombre de tickets");
+                dialogQte.setHeaderText("Places disponibles : " + disponible + " | Vous pouvez encore réserver : " + reste);
+                dialogQte.setContentText("Combien de tickets ?");
+                Optional<String> choixNb = dialogQte.showAndWait();
+                if (choixNb.isEmpty()) return;
+                int quantite = Integer.parseInt(choixNb.get());
+
+                // Demander le mode de paiement
+                ChoiceDialog<String> dialogPaie = new ChoiceDialog<>("Carte bancaire", "Carte bancaire", "Especes", "Virement");
+                dialogPaie.setTitle("Confirmer la réservation");
+                dialogPaie.setHeaderText(String.format("Total à payer : %.2f €", montant * quantite));
+                dialogPaie.setContentText("Mode de paiement :");
+                Optional<String> choixPaie = dialogPaie.showAndWait();
+                if (choixPaie.isEmpty()) return;
+
+                Reservation r = new Reservation(supporterId, ticketId, quantite, Date.valueOf(LocalDate.now()));
+                if (reservationDAO.ajouter(r)) {
+                    List<Reservation> all = reservationDAO.getAllReservations();
+                    if (!all.isEmpty()) {
+                        int reservationId = all.get(all.size() - 1).getId();
+                        paiementDAO.ajouter(new Paiement(
+                            reservationId, montant * quantite, Date.valueOf(LocalDate.now()),
+                            choixPaie.get(), "en_attente"
+                        ));
+                    }
+                    chargerReservations();
+                    if (selectedTicketId != -1) {
+                        try { onCategorieSelectionne(); } catch (Exception ignored) {}
+                    }
+                    setStatus("Réservation effectuée pour " + quantite + " ticket(s) ! Paiement en attente de validation.");
+                } else {
+                    showAlert("Erreur", "Impossible d'ajouter la réservation.");
+                }
+                return;
             }
 
-            Reservation r = new Reservation(supporterId, ticketId, Date.valueOf(LocalDate.now()));
+            Reservation r = new Reservation(supporterId, ticketId, 1, Date.valueOf(LocalDate.now()));
             if (reservationDAO.ajouter(r)) {
                 List<Reservation> all = reservationDAO.getAllReservations();
                 if (!all.isEmpty()) {
@@ -1066,13 +1155,9 @@ public class MainController {
                         "Carte bancaire", "en_attente"
                     ));
                 }
-                if (Session.isAdmin()) chargerStats();
+                chargerStats();
                 chargerReservations();
-                // Rafraîchir la carte ticket pour afficher les places restantes mises à jour
-                if (!Session.isAdmin() && selectedTicketId != -1) {
-                    try { onCategorieSelectionne(); } catch (Exception ignored) {}
-                }
-                setStatus("Réservation effectuée ! Paiement en attente de validation.");
+                setStatus("Réservation effectuée !");
             } else {
                 showAlert("Erreur", "Impossible d'ajouter la réservation.");
             }
@@ -1114,6 +1199,7 @@ public class MainController {
 
             tableView.getColumns().clear();
             tableView.getItems().clear();
+            tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
             TableColumn<String[], String> colId = new TableColumn<>("ID");
             colId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[0]));
@@ -1161,7 +1247,7 @@ public class MainController {
 
             for (Paiement p : paiements) {
                 String[] row = new String[]{
-                    String.valueOf(p.getId()), p.getSupporterNom(), p.getTicketInfo(),
+                    String.valueOf(p.getId()), p.getUtilisateurNom(), p.getTicketInfo(),
                     String.valueOf(p.getMontant()), p.getModePaiement(),
                     p.getStatut(), p.getDatePaiement().toString()
                 };
@@ -1222,6 +1308,7 @@ public class MainController {
                 if (compteEmailLabel  != null) compteEmailLabel.setText(u.getEmail());
                 if (comptePrenomField != null) comptePrenomField.setText(u.getPrenom());
                 if (compteNomField    != null) compteNomField.setText(u.getNom());
+                if (compteEquipeField != null) compteEquipeField.setText(u.getEquipeFavorite());
             }
             if (compteMessageLabel != null) compteMessageLabel.setText("");
             setStatus("Gestion de votre compte.");
@@ -1235,15 +1322,17 @@ public class MainController {
         try {
             String prenom = comptePrenomField != null ? comptePrenomField.getText().trim() : "";
             String nom    = compteNomField    != null ? compteNomField.getText().trim()    : "";
+            String equipe = compteEquipeField != null ? compteEquipeField.getText().trim() : "";
             if (prenom.isEmpty() || nom.isEmpty()) {
                 afficherMessageCompte("Veuillez renseigner le prénom et le nom.", false);
                 return;
             }
             Utilisateur u = Session.getUtilisateur();
             if (u == null) return;
-            if (utilisateurDAO.updateProfil(u.getId(), nom, prenom)) {
+            if (utilisateurDAO.updateProfil(u.getId(), nom, prenom, equipe)) {
                 u.setNom(nom);
                 u.setPrenom(prenom);
+                u.setEquipeFavorite(equipe);
                 welcomeLabel.setText("Bonjour, " + u.getPrenom() + " " + u.getNom());
                 afficherMessageCompte("Profil mis à jour avec succès.", true);
             } else {
@@ -1276,8 +1365,7 @@ public class MainController {
             }
             Utilisateur u = Session.getUtilisateur();
             if (u == null) return;
-            String ancienHash = PasswordUtils.hasher(ancien);
-            if (!ancienHash.equals(u.getMotDePasse())) {
+            if (!PasswordUtils.verifier(ancien, u.getMotDePasse())) {
                 afficherMessageCompte("L'ancien mot de passe est incorrect.", false);
                 return;
             }
@@ -1310,7 +1398,7 @@ public class MainController {
             if (result.isEmpty() || result.get() != ButtonType.OK) return;
             if (utilisateurDAO.deleteUtilisateur(u.getId())) {
                 Session.deconnecter();
-                HelloApplication.changerScene(welcomeLabel, "login-view.fxml", "Connexion", 450, 480);
+                HelloApplication.changerScene(welcomeLabel, "login-view.fxml", "Connexion", 700, 480);
             } else {
                 afficherMessageCompte("Impossible de supprimer le compte.", false);
             }
@@ -1330,6 +1418,41 @@ public class MainController {
     }
 
     // =========================================
+    // EXPORT PDF
+    // =========================================
+
+    @FXML
+    public void exporterPDF() {
+        try {
+            if (currentTableData.isEmpty()) {
+                showAlert("Export", "Aucune réservation à exporter.");
+                return;
+            }
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Enregistrer le rapport");
+            fileChooser.setInitialFileName("reservations_" + LocalDate.now() + ".html");
+            fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Rapport HTML (*.html)", "*.html")
+            );
+            File fichier = fileChooser.showSaveDialog(tableView.getScene().getWindow());
+            if (fichier == null) return;
+
+            ExportService.exporterReservations(fichier, currentTableData, Session.isAdmin());
+            setStatus("Rapport exporté : " + fichier.getName());
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(fichier.toURI());
+            } else {
+                showAlert("Export réussi", "Rapport enregistré :\n" + fichier.getAbsolutePath()
+                    + "\n\nOuvrez ce fichier dans votre navigateur pour l'imprimer en PDF.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Impossible de générer le rapport : " + e.getMessage());
+        }
+    }
+
+    // =========================================
     // DROITS UTILISATEUR
     // =========================================
 
@@ -1338,19 +1461,64 @@ public class MainController {
         try {
             montrerPanneaux();
             tableTitle.setText("📋  Mes Droits & Accès");
-            String[] cols = {"", "Fonctionnalité", "Accès"};
+
+            currentTableData = new ArrayList<>();
+            tableView.getColumns().clear();
+            tableView.getItems().clear();
+
+            // Politique : colonnes libres (pas contraintes)
+            tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+
+            // Colonne N°
+            TableColumn<String[], String> colNum = new TableColumn<>("#");
+            colNum.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[0]));
+            colNum.setMinWidth(42); colNum.setMaxWidth(42); colNum.setPrefWidth(42);
+            colNum.setStyle("-fx-alignment:CENTER;");
+
+            // Colonne Fonctionnalité
+            TableColumn<String[], String> colFonc = new TableColumn<>("Fonctionnalité");
+            colFonc.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[1]));
+            colFonc.setPrefWidth(460); colFonc.setMinWidth(260);
+
+            // Colonne Accès avec badge coloré
+            TableColumn<String[], String> colAcces = new TableColumn<>("Accès");
+            colAcces.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[2]));
+            colAcces.setPrefWidth(155); colAcces.setMinWidth(120); colAcces.setMaxWidth(180);
+            colAcces.setCellFactory(col -> new TableCell<>() {
+                @Override
+                protected void updateItem(String val, boolean empty) {
+                    super.updateItem(val, empty);
+                    if (empty || val == null) { setGraphic(null); setText(null); return; }
+                    Label badge = new Label(val);
+                    badge.getStyleClass().add(val.startsWith("✅") ? "badge-paye" : "badge-annule");
+                    HBox box = new HBox(badge);
+                    box.setAlignment(Pos.CENTER_LEFT);
+                    setGraphic(box);
+                    setText(null);
+                }
+            });
+
+            tableView.getColumns().addAll(colNum, colFonc, colAcces);
+            tableView.setPlaceholder(new Label("Aucun droit à afficher."));
+
             List<String[]> rows = new ArrayList<>();
-            rows.add(new String[]{"1",  "Consulter les matchs disponibles",            "✅  Autorisé"});
-            rows.add(new String[]{"2",  "Voir les catégories, zones et prix de tickets","✅  Autorisé"});
-            rows.add(new String[]{"3",  "Ajouter des tickets au panier",               "✅  Autorisé"});
-            rows.add(new String[]{"4",  "Réserver directement un ticket",              "✅  Autorisé"});
-            rows.add(new String[]{"5",  "Confirmer une commande depuis le panier",     "✅  Autorisé"});
-            rows.add(new String[]{"6",  "Consulter mes réservations",                  "✅  Autorisé"});
-            rows.add(new String[]{"7",  "Annuler mes propres réservations",            "✅  Autorisé"});
-            rows.add(new String[]{"8",  "Gérer les matchs / stades / supporters",      "❌  Admin uniquement"});
-            rows.add(new String[]{"9",  "Voir et gérer tous les paiements",            "❌  Admin uniquement"});
-            rows.add(new String[]{"10", "Supprimer ou modifier des données globales",  "❌  Admin uniquement"});
-            afficherDansTable(cols, rows);
+            rows.add(new String[]{"1",  "Consulter la liste des matchs disponibles",     "✅  Autorisé"});
+            rows.add(new String[]{"2",  "Voir les catégories, zones et prix des tickets", "✅  Autorisé"});
+            rows.add(new String[]{"3",  "Réserver un ticket (jusqu'à 3 par match)",       "✅  Autorisé"});
+            rows.add(new String[]{"4",  "Choisir le mode de paiement à la réservation",   "✅  Autorisé"});
+            rows.add(new String[]{"5",  "Consulter toutes mes réservations",               "✅  Autorisé"});
+            rows.add(new String[]{"6",  "Annuler une de mes réservations",                 "✅  Autorisé"});
+            rows.add(new String[]{"7",  "Modifier mon profil (nom, équipe favorite)",      "✅  Autorisé"});
+            rows.add(new String[]{"8",  "Changer mon mot de passe",                        "✅  Autorisé"});
+            rows.add(new String[]{"9",  "Exporter mes réservations (rapport HTML)",        "✅  Autorisé"});
+            rows.add(new String[]{"10", "Gérer les matchs, stades et tickets",             "❌  Admin uniquement"});
+            rows.add(new String[]{"11", "Voir et valider tous les paiements",              "❌  Admin uniquement"});
+            rows.add(new String[]{"12", "Gérer les comptes utilisateurs",                  "❌  Admin uniquement"});
+            rows.add(new String[]{"13", "Accéder aux statistiques du tableau de bord",     "❌  Admin uniquement"});
+
+            currentTableData = rows;
+            tableView.getItems().addAll(rows);
+            updateRowCount(rows.size());
             setStatus("Consultation des droits utilisateur.");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1386,7 +1554,7 @@ public class MainController {
     public void seDeconnecter() {
         Session.deconnecter();
         try {
-            HelloApplication.changerScene(welcomeLabel, "login-view.fxml", "Connexion", 450, 480);
+            HelloApplication.changerScene(welcomeLabel, "login-view.fxml", "Connexion", 700, 480);
         } catch (Exception e) {
             e.printStackTrace();
         }
