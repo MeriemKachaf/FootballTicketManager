@@ -66,6 +66,7 @@
                     <Button text="🎟  Tickets"        onAction="#afficherTickets"     styleClass="nav-button" maxWidth="Infinity"/>
                     <Button text="🏟  Stades"         onAction="#afficherStades"      styleClass="nav-button" maxWidth="Infinity"/>
                     <Button text="💳  Paiements"      onAction="#chargerPaiements"    styleClass="nav-button" maxWidth="Infinity"/>
+                    <Button text="📋  Journal"        onAction="#afficherJournal"     styleClass="nav-button" maxWidth="Infinity"/>
                 </VBox>
 
                 <VBox fx:id="navUser" spacing="4" visible="false" managed="false">
@@ -296,6 +297,17 @@
                         </HBox>
                     </VBox>
 
+                    <!-- JOURNAL D'ACTIVITE (admin) -->
+                    <VBox fx:id="panneauJournal" spacing="10" styleClass="panel" visible="false" managed="false">
+                        <HBox styleClass="panel-header" alignment="CENTER_LEFT" spacing="10">
+                            <Label text="📋  Journal d'activité" styleClass="panel-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Rafraîchir" onAction="#afficherJournal" styleClass="button,secondary-button"/>
+                        </HBox>
+                        <Label text="Historique des actions effectuées sur l'application (500 dernières entrées)."
+                               styleClass="panel-info" wrapText="true"/>
+                    </VBox>
+
                     <!-- MON COMPTE UTILISATEUR -->
                     <VBox fx:id="panneauMonCompte" spacing="14" styleClass="panel" visible="false" managed="false">
                         <HBox styleClass="panel-header" alignment="CENTER_LEFT">
@@ -343,7 +355,7 @@
                                 <PasswordField fx:id="ancienMdpField" promptText="Mot de passe actuel"
                                                GridPane.columnIndex="1" GridPane.rowIndex="0"/>
                                 <Label text="Nouveau mot de passe :" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                                <PasswordField fx:id="nouveauMdpField" promptText="Nouveau mot de passe (min. 6 caractères)"
+                                <PasswordField fx:id="nouveauMdpField" promptText="Nouveau mot de passe (min. 12 car. : maj, min, spécial)"
                                                GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                                 <Label text="Confirmer :" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                                 <PasswordField fx:id="confirmerMdpField" promptText="Confirmer le nouveau mot de passe"

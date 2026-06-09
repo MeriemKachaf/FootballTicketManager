@@ -64,6 +64,22 @@ public class PasswordUtils {
         }
     }
 
+    /**
+     * Valide la complexité d'un mot de passe.
+     * Retourne null si valide, sinon le message d'erreur.
+     */
+    public static String validerComplexite(String motDePasse) {
+        if (motDePasse == null || motDePasse.length() < 12)
+            return "Le mot de passe doit contenir au moins 12 caractères.";
+        if (!motDePasse.matches(".*[A-Z].*"))
+            return "Le mot de passe doit contenir au moins une lettre majuscule.";
+        if (!motDePasse.matches(".*[a-z].*"))
+            return "Le mot de passe doit contenir au moins une lettre minuscule.";
+        if (!motDePasse.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?`~].*"))
+            return "Le mot de passe doit contenir au moins un caractère spécial (!@#$%...).";
+        return null;
+    }
+
     // Gardé uniquement pour la rétrocompatibilité avec les anciens comptes SHA-256
     private static String hasherSHA256(String motDePasse) {
         try {

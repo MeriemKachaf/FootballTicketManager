@@ -1,6 +1,7 @@
 package com.example.footballticketmanager.controller;
 
 import com.example.footballticketmanager.HelloApplication;
+import com.example.footballticketmanager.dao.JournalDAO;
 import com.example.footballticketmanager.dao.UtilisateurDAO;
 import com.example.footballticketmanager.model.Utilisateur;
 import com.example.footballticketmanager.session.Session;
@@ -25,6 +26,7 @@ public class LoginController {
     @FXML private Label messageLabel;
 
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
+    private final JournalDAO journalDAO = new JournalDAO();
 
     @FXML
     public void seConnecter() {
@@ -59,13 +61,16 @@ public class LoginController {
             if (restantes <= 0) {
                 blocages.put(email, System.currentTimeMillis());
                 tentatives.remove(email);
+                journalDAO.enregistrer(email, "COMPTE_BLOQUE", "Compte bloqué après 3 tentatives échouées", "ECHEC");
                 afficherMessage("Trop de tentatives. Compte bloqué 2 minutes.", false);
             } else {
+                journalDAO.enregistrer(email, "CONNEXION_ECHEC", "Mot de passe incorrect (" + nb + " tentative(s))", "ECHEC");
                 afficherMessage("Email ou mot de passe incorrect. (" + restantes + " tentative(s) restante(s))", false);
             }
             return;
         }
 
+        journalDAO.enregistrer(email, "CONNEXION", "Connexion réussie", "SUCCES");
         tentatives.remove(email);
         blocages.remove(email);
         Session.connecter(utilisateur);

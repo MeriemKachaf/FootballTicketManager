@@ -52,7 +52,7 @@
             </VBox>
 
             <VBox spacing="5">
-                <Label text="Mot de passe (min. 6 caractères)" styleClass="login-field-label"/>
+                <Label text="Mot de passe (min. 12 car. : maj, min, spécial)" styleClass="login-field-label"/>
                 <PasswordField fx:id="motDePasseField" promptText="Choisir un mot de passe" maxWidth="Infinity"/>
             </VBox>
 

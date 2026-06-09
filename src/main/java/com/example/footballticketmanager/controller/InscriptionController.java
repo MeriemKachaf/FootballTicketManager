@@ -1,6 +1,7 @@
 package com.example.footballticketmanager.controller;
 
 import com.example.footballticketmanager.HelloApplication;
+import com.example.footballticketmanager.dao.JournalDAO;
 import com.example.footballticketmanager.dao.UtilisateurDAO;
 import com.example.footballticketmanager.model.Utilisateur;
 import com.example.footballticketmanager.util.PasswordUtils;
@@ -19,6 +20,7 @@ public class InscriptionController {
     @FXML private Label messageLabel;
 
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
+    private final JournalDAO journalDAO = new JournalDAO();
 
     @FXML
     public void sInscrire() {
@@ -39,8 +41,9 @@ public class InscriptionController {
             return;
         }
 
-        if (motDePasse.length() < 6) {
-            afficherMessage("Le mot de passe doit faire au moins 6 caracteres.", false);
+        String erreurMdp = PasswordUtils.validerComplexite(motDePasse);
+        if (erreurMdp != null) {
+            afficherMessage(erreurMdp, false);
             return;
         }
 
@@ -55,12 +58,17 @@ public class InscriptionController {
             return;
         }
 
-        Utilisateur nouvel = new Utilisateur(nom, prenom, email, PasswordUtils.hasher(motDePasse), "user", "");
+        String hash = PasswordUtils.hasher(motDePasse);
+        Utilisateur nouvel = new Utilisateur(nom, prenom, email, hash, "user", "");
 
-        if (utilisateurDAO.ajouter(nouvel)) {
+        int nouvelId = utilisateurDAO.ajouter(nouvel);
+        if (nouvelId > 0) {
+            utilisateurDAO.sauvegarderHistorique(nouvelId, hash);
+            journalDAO.enregistrer(email, "INSCRIPTION", "Nouveau compte créé : " + nom + " " + prenom, "SUCCES");
             afficherMessage("Inscription reussie ! Vous pouvez vous connecter.", true);
             viderChamps();
         } else {
+            journalDAO.enregistrer(email, "INSCRIPTION_ECHEC", "Échec de la création du compte", "ECHEC");
             afficherMessage("Erreur lors de l'inscription. Reessayez.", false);
         }
     }

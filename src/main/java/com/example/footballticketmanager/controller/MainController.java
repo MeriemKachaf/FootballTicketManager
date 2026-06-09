@@ -96,6 +96,7 @@ public class MainController {
     @FXML private VBox panneauTickets;
     @FXML private VBox panneauReservations;
     @FXML private VBox panneauPaiements;
+    @FXML private VBox panneauJournal;
     @FXML private VBox panneauMonCompte;
 
     // --- Mon compte ---
@@ -141,6 +142,7 @@ public class MainController {
     private final StadeDAO stadeDAO = new StadeDAO();
     private final PaiementDAO paiementDAO = new PaiementDAO();
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
+    private final JournalDAO journalDAO = new JournalDAO();
 
     private int selectedMatchId = -1;
     private int selectedSupporterId = -1;
@@ -266,7 +268,7 @@ public class MainController {
     }
 
     private void montrerPanneaux(VBox... aAfficher) {
-        VBox[] tous = {panneauMatchs, panneauSupporters, panneauStades, panneauTickets, panneauReservations, panneauPaiements, panneauMonCompte};
+        VBox[] tous = {panneauMatchs, panneauSupporters, panneauStades, panneauTickets, panneauReservations, panneauPaiements, panneauJournal, panneauMonCompte};
         for (VBox p : tous) {
             if (p != null) { p.setVisible(false); p.setManaged(false); }
         }
@@ -609,6 +611,7 @@ public class MainController {
                 return;
             }
             utilisateurDAO.ajouter(new Utilisateur(nom, "", email, PasswordUtils.hasher("user123"), "user", equipe));
+            journalDAO.enregistrer(Session.getUtilisateur().getEmail(), "UTILISATEUR_AJOUT", "Utilisateur ajouté : " + nom + " (" + email + ")", "SUCCES");
             clearSupporterFields();
             chargerComboBoxes();
             chargerStats();
@@ -671,6 +674,7 @@ public class MainController {
             if (row == null) { showAlert("Erreur", "Sélectionnez un utilisateur à supprimer."); return; }
             if (!confirmerSuppression("cet utilisateur")) return;
             utilisateurDAO.deleteUtilisateur(Integer.parseInt(row[0]));
+            journalDAO.enregistrer(Session.getUtilisateur().getEmail(), "UTILISATEUR_SUPPRESSION", "Utilisateur supprimé (id=" + row[0] + ")", "SUCCES");
             chargerComboBoxes();
             chargerStats();
             afficherSupporters();
@@ -1134,6 +1138,7 @@ public class MainController {
                             choixPaie.get(), "en_attente"
                         ));
                     }
+                    journalDAO.enregistrer(Session.getUtilisateur().getEmail(), "RESERVATION", quantite + " ticket(s) réservé(s) — ticket id=" + ticketId, "SUCCES");
                     chargerReservations();
                     if (selectedTicketId != -1) {
                         try { onCategorieSelectionne(); } catch (Exception ignored) {}
@@ -1155,6 +1160,7 @@ public class MainController {
                         "Carte bancaire", "en_attente"
                     ));
                 }
+                journalDAO.enregistrer(Session.getUtilisateur().getEmail(), "RESERVATION", "1 ticket réservé (admin) — ticket id=" + ticketId, "SUCCES");
                 chargerStats();
                 chargerReservations();
                 setStatus("Réservation effectuée !");
@@ -1174,6 +1180,7 @@ public class MainController {
             if (row == null) { showAlert("Erreur", "Sélectionnez une réservation à supprimer."); return; }
             if (!confirmerSuppression("cette réservation")) return;
             if (reservationDAO.supprimer(Integer.parseInt(row[0]))) {
+                journalDAO.enregistrer(Session.getUtilisateur().getEmail(), "RESERVATION_ANNULEE", "Réservation supprimée (id=" + row[0] + ")", "SUCCES");
                 if (Session.isAdmin()) chargerStats();
                 chargerReservations();
                 setStatus("Réservation supprimée.");
@@ -1187,6 +1194,53 @@ public class MainController {
     // =========================================
     // PAIEMENTS
     // =========================================
+
+    @FXML
+    public void afficherJournal() {
+        montrerPanneaux(panneauJournal);
+        tableTitle.setText("📋  Journal d'activité");
+        List<String[]> data = journalDAO.getJournal();
+        currentTableData = data;
+
+        tableView.getColumns().clear();
+        tableView.getItems().clear();
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        String[] noms    = {"ID", "Date / Heure", "Utilisateur", "Action", "Détail", "Statut"};
+        double[] minMax  = {  0,         140,          160,          150,      -1,       80  };
+
+        for (int i = 0; i < noms.length; i++) {
+            final int idx = i;
+            TableColumn<String[], String> col = new TableColumn<>(noms[i]);
+            col.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().length > idx ? d.getValue()[idx] : "")
+            );
+            if (i == 0) {
+                col.setVisible(false); col.setMaxWidth(0); col.setMinWidth(0);
+            } else if (minMax[i] > 0) {
+                col.setMinWidth(minMax[i]);
+                col.setMaxWidth(minMax[i]);
+            }
+            if (i == 5) {
+                col.setCellFactory(c -> new TableCell<>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) { setText(null); setStyle(""); return; }
+                        setText(item);
+                        setStyle("SUCCES".equals(item)
+                            ? "-fx-text-fill: #16a34a; -fx-font-weight: bold;"
+                            : "-fx-text-fill: #dc2626; -fx-font-weight: bold;");
+                    }
+                });
+            }
+            tableView.getColumns().add(col);
+        }
+
+        tableView.setPlaceholder(new Label("Aucune activité enregistrée."));
+        tableView.getItems().addAll(data);
+        rowCountLabel.setText(data.size() + " entrée(s)");
+    }
 
     @FXML
     public void chargerPaiements() {
@@ -1355,8 +1409,9 @@ public class MainController {
                 afficherMessageCompte("Tous les champs mot de passe sont obligatoires.", false);
                 return;
             }
-            if (nouveau.length() < 6) {
-                afficherMessageCompte("Le nouveau mot de passe doit contenir au moins 6 caractères.", false);
+            String erreurMdp = PasswordUtils.validerComplexite(nouveau);
+            if (erreurMdp != null) {
+                afficherMessageCompte(erreurMdp, false);
                 return;
             }
             if (!nouveau.equals(confirmer)) {
@@ -1369,14 +1424,20 @@ public class MainController {
                 afficherMessageCompte("L'ancien mot de passe est incorrect.", false);
                 return;
             }
+            if (utilisateurDAO.motDePasseDejauUtilise(u.getId(), nouveau)) {
+                afficherMessageCompte("Ce mot de passe a déjà été utilisé récemment (3 derniers).", false);
+                return;
+            }
             String nouveauHash = PasswordUtils.hasher(nouveau);
             if (utilisateurDAO.updateMotDePasse(u.getId(), nouveauHash)) {
                 u.setMotDePasse(nouveauHash);
+                journalDAO.enregistrer(u.getEmail(), "CHANGEMENT_MDP", "Mot de passe modifié avec succès", "SUCCES");
                 if (ancienMdpField    != null) ancienMdpField.clear();
                 if (nouveauMdpField   != null) nouveauMdpField.clear();
                 if (confirmerMdpField != null) confirmerMdpField.clear();
                 afficherMessageCompte("Mot de passe changé avec succès.", true);
             } else {
+                journalDAO.enregistrer(u.getEmail(), "CHANGEMENT_MDP", "Échec du changement de mot de passe", "ECHEC");
                 afficherMessageCompte("Erreur lors du changement de mot de passe.", false);
             }
         } catch (Exception e) {
@@ -1552,6 +1613,8 @@ public class MainController {
 
     @FXML
     public void seDeconnecter() {
+        if (Session.getUtilisateur() != null)
+            journalDAO.enregistrer(Session.getUtilisateur().getEmail(), "DECONNEXION", "", "SUCCES");
         Session.deconnecter();
         try {
             HelloApplication.changerScene(welcomeLabel, "login-view.fxml", "Connexion", 700, 480);

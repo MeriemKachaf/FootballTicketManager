@@ -8,6 +8,8 @@ DROP TABLE IF EXISTS ticket;
 DROP TABLE IF EXISTS supporter;
 DROP TABLE IF EXISTS match_football;
 DROP TABLE IF EXISTS stade;
+DROP TABLE IF EXISTS historique_mot_de_passe;
+DROP TABLE IF EXISTS journal_activite;
 DROP TABLE IF EXISTS utilisateur;
 
 -- =============================================
@@ -21,6 +23,31 @@ CREATE TABLE utilisateur (
     mot_de_passe    VARCHAR(255) NOT NULL,
     role            ENUM('admin', 'user') NOT NULL DEFAULT 'user',
     equipe_favorite VARCHAR(100) DEFAULT ''
+);
+
+-- =============================================
+-- TABLE : journal_activite
+-- =============================================
+CREATE TABLE journal_activite (
+    id      INT AUTO_INCREMENT PRIMARY KEY,
+    email   VARCHAR(100) NOT NULL DEFAULT '',
+    action  VARCHAR(50)  NOT NULL,
+    detail  VARCHAR(500) NOT NULL DEFAULT '',
+    statut  ENUM('SUCCES','ECHEC') NOT NULL DEFAULT 'SUCCES',
+    date    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- TABLE : historique_mot_de_passe
+-- Stocke les 3 derniers hashes par utilisateur
+-- =============================================
+CREATE TABLE historique_mot_de_passe (
+    id                INT AUTO_INCREMENT PRIMARY KEY,
+    utilisateur_id    INT NOT NULL,
+    mot_de_passe      VARCHAR(255) NOT NULL,
+    date_modification DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hist_utilisateur
+        FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE
 );
 
 -- =============================================
