@@ -36,28 +36,43 @@
                 </columnConstraints>
 
                 <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                    <Label text="Nom" styleClass="login-field-label"/>
+                    <HBox spacing="3" alignment="CENTER_LEFT">
+                        <Label text="*" styleClass="required-star"/>
+                        <Label text="Nom" styleClass="login-field-label"/>
+                    </HBox>
                     <TextField fx:id="nomField" promptText="Votre nom" maxWidth="Infinity"/>
                 </VBox>
 
                 <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                    <Label text="Prénom" styleClass="login-field-label"/>
+                    <HBox spacing="3" alignment="CENTER_LEFT">
+                        <Label text="*" styleClass="required-star"/>
+                        <Label text="Prénom" styleClass="login-field-label"/>
+                    </HBox>
                     <TextField fx:id="prenomField" promptText="Votre prénom" maxWidth="Infinity"/>
                 </VBox>
             </GridPane>
 
             <VBox spacing="5">
-                <Label text="Adresse email" styleClass="login-field-label"/>
+                <HBox spacing="3" alignment="CENTER_LEFT">
+                    <Label text="*" styleClass="required-star"/>
+                    <Label text="Adresse email" styleClass="login-field-label"/>
+                </HBox>
                 <TextField fx:id="emailField" promptText="exemple@email.com" maxWidth="Infinity"/>
             </VBox>
 
             <VBox spacing="5">
-                <Label text="Mot de passe (min. 12 car. : maj, min, spécial)" styleClass="login-field-label"/>
+                <HBox spacing="3" alignment="CENTER_LEFT">
+                    <Label text="*" styleClass="required-star"/>
+                    <Label text="Mot de passe (min. 12 car. : maj, min, spécial)" styleClass="login-field-label"/>
+                </HBox>
                 <PasswordField fx:id="motDePasseField" promptText="Choisir un mot de passe" maxWidth="Infinity"/>
             </VBox>
 
             <VBox spacing="5">
-                <Label text="Confirmer le mot de passe" styleClass="login-field-label"/>
+                <HBox spacing="3" alignment="CENTER_LEFT">
+                    <Label text="*" styleClass="required-star"/>
+                    <Label text="Confirmer le mot de passe" styleClass="login-field-label"/>
+                </HBox>
                 <PasswordField fx:id="confirmField" promptText="Répéter le mot de passe" maxWidth="Infinity"/>
             </VBox>
 
