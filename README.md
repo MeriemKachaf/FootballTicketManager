@@ -2,7 +2,8 @@
 
 Application desktop de gestion de billetterie de matchs de football, développée en Java avec JavaFX et MySQL.
 
-**Auteure :** Meriem Kachaf — BTS SIO SLAM 2025/2026
+**Auteure :** Meriem Kachaf — BTS SIO SLAM 2025/2026  
+**Dernière mise à jour :** Juin 2026 — version finale
 
 ---
 
