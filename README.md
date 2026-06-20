@@ -1,179 +1,222 @@
-# Projet Client Lourd - Football Ticket Manager
+# Football Ticket Manager
 
-## Description
+Application desktop de gestion de billetterie de matchs de football, développée en Java avec JavaFX et MySQL.
 
-Ce projet a été réalisé dans le cadre du TP de **client lourd** pour le
-**BTS SIO SLAM**.
+**Auteure :** Meriem Kachaf — BTS SIO SLAM 2025/2026
 
-L'objectif est de développer une application de **billetterie de matchs
-de football** permettant de gérer les matchs, les supporters et les
-tickets à partir d'une base de données MySQL.
-
-L'application est développée en **Java avec JavaFX** pour l'interface
-graphique et utilise le modèle **DAO (Data Access Object)** pour accéder
-aux données de la base.
-
-Le projet inclut également : - la modélisation UML de la base de
-données - les scripts SQL de création de la base - des données de test -
-des classes Java permettant l'accès aux données
-
-------------------------------------------------------------------------
-
-## Structure du projet
-
-    FootballTicketManager
-    │
-    ├── database
-    │   ├── football.sql        → Script de création de la base de données
-    │   ├── data.sql            → Données de test
-    │   └── football.puml       → Diagramme UML
-    │
-    ├── src
-    │   └── main
-    │       ├── java
-    │       │   └── com.example.footballticketmanager
-    │       │       ├── HelloApplication.java
-    │       │       ├── controller
-    │       │       │   └── MainController.java
-    │       │       ├── dao
-    │       │       │   ├── MatchDAO.java
-    │       │       │   ├── SupporterDAO.java
-    │       │       │   └── TicketDAO.java
-    │       │       ├── database
-    │       │       │   └── DatabaseConnection.java
-    │       │       └── model
-    │       │           ├── MatchFootball.java
-    │       │           ├── Supporter.java
-    │       │           └── Ticket.java
-    │       │
-    │       └── resources
-    │           └── view
-    │               └── main-view.fxml
-    │
-    └── pom.xml
-
-------------------------------------------------------------------------
+---
 
 ## Technologies utilisées
 
--   **Java**
--   **JavaFX**
--   **MySQL**
--   **JDBC**
--   **Maven**
--   **PlantUML**
--   **phpMyAdmin**
--   **Git / GitHub**
+| Technologie | Rôle |
+|-------------|------|
+| Java 17 | Langage principal |
+| JavaFX 21 | Interface graphique (FXML + CSS) |
+| MySQL 8.0 | Base de données relationnelle |
+| JDBC | Connexion Java ↔ MySQL |
+| Maven | Gestion des dépendances et build |
+| JUnit 5 | Tests unitaires |
+| PlantUML | Diagrammes UML |
+| Git / GitHub | Versionnement |
 
-------------------------------------------------------------------------
+---
+
+## Architecture — Pattern MVC + DAO
+
+```
+Vue (FXML)          → ce que l'utilisateur voit
+Contrôleur (Java)   → la logique métier
+DAO (Java)          → les requêtes SQL
+Base de données     → MySQL
+```
+
+---
+
+## Structure du projet
+
+```
+FootballTicketManager/
+│
+├── basededonnees/
+│   ├── football.sql          → Schéma complet (tables + contraintes + FK)
+│   └── data.sql              → Données de démonstration
+│
+├── doc/                      → Modélisations UML
+│   ├── 01_diagramme_classes.puml
+│   ├── 02_diagramme_cas_utilisation.puml
+│   ├── 03_diagramme_sequence_connexion.puml
+│   ├── 04_diagramme_sequence_reservation.puml
+│   └── 05_MLD_base_de_donnees.puml
+│
+├── modelisation/
+│   └── football.puml         → Diagramme de classes simplifié
+│
+├── src/
+│   ├── main/
+│   │   ├── java/com/example/footballticketmanager/
+│   │   │   ├── HelloApplication.java       → Point d'entrée JavaFX
+│   │   │   ├── Launcher.java               → Classe de lancement (Fat JAR)
+│   │   │   ├── controller/
+│   │   │   │   ├── LoginController.java    → Connexion + anti-brute-force
+│   │   │   │   ├── InscriptionController.java → Création de compte
+│   │   │   │   └── MainController.java     → Toutes les fonctionnalités
+│   │   │   ├── dao/
+│   │   │   │   ├── UtilisateurDAO.java
+│   │   │   │   ├── MatchDAO.java
+│   │   │   │   ├── TicketDAO.java
+│   │   │   │   ├── StadeDAO.java
+│   │   │   │   ├── ReservationDAO.java
+│   │   │   │   ├── PaiementDAO.java
+│   │   │   │   └── JournalDAO.java
+│   │   │   ├── database/
+│   │   │   │   └── DatabaseConnection.java → Connexion JDBC via config.properties
+│   │   │   ├── model/
+│   │   │   │   ├── Utilisateur.java
+│   │   │   │   ├── Stade.java
+│   │   │   │   ├── MatchFootball.java
+│   │   │   │   ├── Ticket.java
+│   │   │   │   ├── Reservation.java
+│   │   │   │   └── Paiement.java
+│   │   │   ├── session/
+│   │   │   │   └── Session.java            → Utilisateur connecté en mémoire
+│   │   │   └── util/
+│   │   │       ├── PasswordUtils.java      → Hachage PBKDF2
+│   │   │       └── ExportService.java      → Export HTML des réservations
+│   │   │
+│   │   └── resources/
+│   │       ├── config.properties           → Paramètres BDD (exclu de Git)
+│   │       └── view/
+│   │           ├── login-view.fxml
+│   │           ├── inscription-view.fxml
+│   │           ├── main-view.fxml
+│   │           └── style.css
+│   │
+│   └── test/
+│       └── java/com/example/footballticketmanager/util/
+│           ├── PasswordUtilsTest.java      → 6 tests JUnit 5
+│           └── EmailValidatorTest.java     → 10 tests JUnit 5
+│
+├── DEPLOIEMENT.md            → Procédure d'installation complète
+└── pom.xml                   → Configuration Maven
+```
+
+---
 
 ## Base de données
 
-Nom de la base :
+**Nom :** `football_manager`
 
-football_manager
+| Table | Description |
+|-------|-------------|
+| `utilisateur` | Comptes (admin / user), mot de passe hashé PBKDF2 |
+| `stade` | Stades avec nom, ville, capacité, localisation |
+| `match_football` | Matchs (équipes, stade, date) |
+| `ticket` | Tickets par match (catégorie VIP/Tribune/Standard, prix, stock) |
+| `reservation` | Réservations (max 3 tickets par personne par match) |
+| `paiement` | Paiements liés aux réservations (payé / en_attente / annulé) |
+| `journal_activite` | Traçabilité de toutes les actions |
+| `historique_mot_de_passe` | 3 derniers hashes pour empêcher la réutilisation |
 
-Tables utilisées :
-
--   match_football
--   supporter
--   ticket
-
-Relations : - un **ticket** est associé à un **match** - les
-**supporters** représentent les clients du système
-
-------------------------------------------------------------------------
+---
 
 ## Fonctionnalités
 
-### Gestion des matchs
+### Espace Administrateur
+- Tableau de bord : statistiques en temps réel, PieChart et BarChart
+- Gestion des matchs (CRUD) avec badges d'équipes colorés
+- Gestion des tickets (CRUD) avec calcul du stock disponible
+- Gestion des stades (CRUD)
+- Gestion des utilisateurs (CRUD)
+- Validation / annulation des paiements
+- Journal d'activité (500 dernières entrées)
+- Export HTML des réservations
 
-L'utilisateur peut : - afficher les matchs - ajouter un match - modifier
-un match - supprimer un match
+### Espace Utilisateur
+- Consultation des matchs disponibles
+- Réservation de tickets (max 3 par match, choix de la quantité et du mode de paiement)
+- Indicateur de disponibilité en temps réel (vert / orange / rouge)
+- Consultation de ses réservations avec statut de paiement
+- Export HTML de ses réservations
+- Modification du profil
+- Changement de mot de passe sécurisé
+- Suppression du compte
 
-### Gestion des supporters
+---
 
-L'utilisateur peut : - afficher les supporters - ajouter un supporter -
-modifier un supporter - supprimer un supporter
+## Sécurité
 
-### Gestion des tickets
+| Mesure | Implémentation |
+|--------|---------------|
+| Hachage PBKDF2 | `PasswordUtils.java` — sel aléatoire + 65 536 itérations |
+| Anti-brute-force | `LoginController.java` — blocage 2 min après 3 tentatives |
+| Complexité du mot de passe | 12 car. min, majuscule, minuscule, caractère spécial |
+| Historique mots de passe | Empêche la réutilisation des 3 derniers |
+| Protection injection SQL | `PreparedStatement` dans tous les DAOs |
+| Contrôle d'accès par rôle | `Session.isAdmin()` — panneaux admin cachés pour les users |
+| Credentials hors du code | `config.properties` exclu de Git via `.gitignore` |
+| Protection XSS | `escapeHtml()` dans `ExportService.java` |
+| Journalisation | Toutes les actions tracées dans `journal_activite` |
 
-L'utilisateur peut : - afficher les tickets
+---
 
-------------------------------------------------------------------------
+## Tests unitaires
 
-## Accès aux données (DAO)
+**16 tests JUnit 5** — tous verts
 
-### Modèles
+| Fichier | Tests |
+|---------|-------|
+| `PasswordUtilsTest.java` | Hash différent pour même mot de passe, vérification correcte/incorrecte, format PBKDF2 |
+| `EmailValidatorTest.java` | Email valide, sans @, sans domaine, null, trop long, commençant par un point |
 
--   MatchFootball.java
--   Supporter.java
--   Ticket.java
+Lancer les tests :
+```bash
+mvn test
+```
 
-### DAO
+---
 
--   MatchDAO.java
--   SupporterDAO.java
--   TicketDAO.java
+## Installation rapide
 
-Chaque DAO permet : - récupérer les données - ajouter des
-enregistrements - modifier des enregistrements - supprimer des
-enregistrements
+### Prérequis
+- Java 17+
+- MySQL 8.0+
 
-------------------------------------------------------------------------
+### 1. Importer la base de données
+```bash
+mysql -u root -p < basededonnees/football.sql
+mysql -u root -p football_manager < basededonnees/data.sql
+```
 
-## Connexion à la base de données
+### 2. Créer l'utilisateur applicatif
+```sql
+CREATE USER 'ftm_user'@'localhost' IDENTIFIED BY 'VotreMotDePasse';
+GRANT ALL PRIVILEGES ON football_manager.* TO 'ftm_user'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-La connexion est gérée par la classe :
+### 3. Configurer la connexion
+Créer `src/main/resources/config.properties` :
+```properties
+db.url=jdbc:mysql://localhost:3306/football_manager
+db.user=ftm_user
+db.password=VotreMotDePasse
+```
 
-DatabaseConnection.java
+### 4. Lancer
+```bash
+mvn clean package -DskipTests
+java -jar target/FootballTicketManager-1.0.jar
+```
 
-Cette classe utilise **JDBC** pour établir la connexion avec la base
-MySQL.
+> Voir `DEPLOIEMENT.md` pour la procédure complète.
 
-------------------------------------------------------------------------
+---
 
-## Installation et exécution
+## Comptes de démonstration
 
-### 1. Installer les outils
-
--   Java JDK 21
--   IntelliJ IDEA
--   XAMPP (MySQL + phpMyAdmin)
-
-### 2. Importer la base de données
-
-Ouvrir phpMyAdmin :
-
-http://localhost/phpmyadmin
-
-Créer la base :
-
-football_manager
-
-Importer ensuite : 1. football.sql 2. data.sql
-
-### 3. Lancer l'application
-
-Dans IntelliJ, exécuter la classe :
-
-HelloApplication.java
-
-L'interface JavaFX s'ouvrira.
-
-------------------------------------------------------------------------
-
-## Diagramme UML
-
-Le diagramme UML du projet a été réalisé avec **PlantUML** et se trouve
-dans :
-
-database/football.puml
-
-------------------------------------------------------------------------
-
-## Auteur
-
-**Meriem Kachaf**
-BTS SIO SLAM
-Année : 2025 / 2026
+| Email | Mot de passe | Rôle |
+|-------|-------------|------|
+| admin@football.com | admin123 | Administrateur |
+| meriem@gmail.com | user123 | Utilisateur |
+| karim@gmail.com | user123 | Utilisateur |
+| sophie@gmail.com | user123 | Utilisateur |
