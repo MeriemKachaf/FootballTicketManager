@@ -1,18 +1,29 @@
 @startuml
+' Diagramme de classes simplifié (version résumée)
+' Voir /doc/ pour les diagrammes complets
+
+class Utilisateur {
+  - id : int
+  - nom : String
+  - prenom : String
+  - email : String
+  - motDePasse : String
+  - role : String
+}
+
+class Stade {
+  - id : int
+  - nom : String
+  - ville : String
+  - capacite : int
+}
 
 class MatchFootball {
   - id : int
   - equipeDomicile : String
   - equipeExterieure : String
-  - stade : String
+  - stadeId : int
   - dateMatch : Date
-}
-
-class Supporter {
-  - id : int
-  - nom : String
-  - email : String
-  - equipeFavorite : String
 }
 
 class Ticket {
@@ -20,6 +31,29 @@ class Ticket {
   - matchId : int
   - prix : double
   - categorie : String
+  - zone : String
+  - quantite : int
+}
+
+class Reservation {
+  - id : int
+  - utilisateurId : int
+  - ticketId : int
+  - quantite : int
+}
+
+class Paiement {
+  - id : int
+  - reservationId : int
+  - montant : double
+  - statut : String
+}
+
+class UtilisateurDAO {
+  + authentifier()
+  + ajouter()
+  + updateMotDePasse()
+  + deleteUtilisateur()
 }
 
 class MatchDAO {
@@ -29,28 +63,79 @@ class MatchDAO {
   + deleteMatch()
 }
 
-class SupporterDAO {
-  + getAllSupporters()
-  + addSupporter()
-  + updateSupporter()
-  + deleteSupporter()
-}
-
 class TicketDAO {
   + getAllTickets()
+  + getTicketsByMatchId()
+  + getDisponible()
+}
+
+class StadeDAO {
+  + getAllStades()
+  + ajouter()
+  + supprimer()
+}
+
+class ReservationDAO {
+  + getAllReservations()
+  + ajouter()
+  + supprimer()
+  + getTotalParMatch()
+}
+
+class PaiementDAO {
+  + getAllPaiements()
+  + ajouter()
+  + updateStatut()
+  + getTotalRevenu()
+}
+
+class JournalDAO {
+  + enregistrer()
+  + getJournal()
 }
 
 class DatabaseConnection {
-  + getConnection()
+  + {static} getConnection()
 }
 
-MatchDAO --> MatchFootball
-SupporterDAO --> Supporter
-TicketDAO --> Ticket
-MatchDAO --> DatabaseConnection
-SupporterDAO --> DatabaseConnection
-TicketDAO --> DatabaseConnection
+class PasswordUtils {
+  + {static} hasher()
+  + {static} verifier()
+  + {static} validerComplexite()
+}
 
-Ticket --> MatchFootball : match_id
+class Session {
+  - {static} utilisateurConnecte : Utilisateur
+  + {static} connecter()
+  + {static} isAdmin()
+  + {static} deconnecter()
+}
+
+' Relations modèles
+MatchFootball "N" --> "1" Stade
+Ticket "N" --> "1" MatchFootball
+Reservation "N" --> "1" Utilisateur
+Reservation "N" --> "1" Ticket
+Paiement "1" --> "1" Reservation
+
+' Relations DAOs → BDD
+UtilisateurDAO --> DatabaseConnection
+MatchDAO --> DatabaseConnection
+TicketDAO --> DatabaseConnection
+StadeDAO --> DatabaseConnection
+ReservationDAO --> DatabaseConnection
+PaiementDAO --> DatabaseConnection
+JournalDAO --> DatabaseConnection
+
+' DAOs → Modèles
+UtilisateurDAO ..> Utilisateur
+MatchDAO ..> MatchFootball
+TicketDAO ..> Ticket
+StadeDAO ..> Stade
+ReservationDAO ..> Reservation
+PaiementDAO ..> Paiement
+
+' Session
+Session --> Utilisateur
 
 @enduml

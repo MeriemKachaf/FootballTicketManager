@@ -1,14 +1,16 @@
 package com.example.footballticketmanager.model;
 
+// Modèle MVC : représente un ticket (correspond à la table "ticket" en BDD)
 public class Ticket {
 
     private int id;
-    private int matchId;
+    private int matchId;       // clé étrangère → table match_football
     private double prix;
-    private String categorie;
+    private String categorie;  // VIP, Tribune ou Standard
     private String zone;
-    private int quantite;
+    private int quantite;      // stock total disponible pour ce type de ticket
 
+    // Constructeur complet : utilisé quand on lit depuis la BDD
     public Ticket(int id, int matchId, double prix, String categorie, String zone, int quantite) {
         this.id = id;
         this.matchId = matchId;
