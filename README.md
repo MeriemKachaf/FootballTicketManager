@@ -1,6 +1,6 @@
 # Football Ticket Manager
 
-Application desktop de gestion de billetterie de matchs de football, développée en Java avec JavaFX et MySQL.
+Application desktop de gestion de billetterie de matchs de football, développée en Java avec JavaFX et MySQL. Projet réalisé dans le cadre du BTS SIO SLAM.
 
 **Auteure :** Meriem Kachaf — BTS SIO SLAM 2025/2026  
 **Dernière mise à jour :** Juin 2026 — version finale
