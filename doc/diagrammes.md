@@ -4,187 +4,186 @@
 
 ```mermaid
 classDiagram
-    namespace Application {
-        class HelloApplication {
-            -Stage primaryStage$
-            +changerScene(node, fxml, titre, width, height)$
-            +main(args)
-        }
+    %% ── Application ──────────────────────────────────────────
+    class HelloApplication {
+        -Stage primaryStage$
+        +changerScene(node, fxml, titre, width, height)$
+        +main(args)
     }
-    namespace Session {
-        class Session {
-            -Utilisateur utilisateurConnecte$
-            +connecter(u)$
-            +deconnecter()$
-            +getUtilisateur() Utilisateur$
-            +isAdmin() boolean$
-        }
+
+    %% ── Session ───────────────────────────────────────────────
+    class Session {
+        -Utilisateur utilisateurConnecte$
+        +connecter(u)$
+        +deconnecter()$
+        +getUtilisateur() Utilisateur$
+        +isAdmin() boolean$
     }
-    namespace Modeles {
-        class Utilisateur {
-            -int id
-            -String nom
-            -String prenom
-            -String email
-            -String motDePasse
-            -String role
-            -String equipeFavorite
-            +getId() int
-            +getEmail() String
-            +getRole() String
-        }
-        class Stade {
-            -int id
-            -String nom
-            -String ville
-            -int capacite
-            -String localisation
-            +getId() int
-            +getNom() String
-        }
-        class MatchFootball {
-            -int id
-            -String equipeDomicile
-            -String equipeExterieure
-            -int stadeId
-            -String stadeNom
-            -Date dateMatch
-            +getId() int
-            +getStadeNom() String
-        }
-        class Ticket {
-            -int id
-            -int matchId
-            -double prix
-            -String categorie
-            -String zone
-            -int quantite
-            +getId() int
-            +getPrix() double
-            +getCategorie() String
-        }
-        class Reservation {
-            -int id
-            -int utilisateurId
-            -int ticketId
-            -int quantite
-            -Date dateReservation
-            -String statutPaiement
-            +getId() int
-            +getStatutPaiement() String
-        }
-        class Paiement {
-            -int id
-            -int reservationId
-            -double montant
-            -Date datePaiement
-            -String modePaiement
-            -String statut
-            +getId() int
-            +getMontant() double
-            +getStatut() String
-        }
+
+    %% ── Modeles ───────────────────────────────────────────────
+    class Utilisateur {
+        -int id
+        -String nom
+        -String prenom
+        -String email
+        -String motDePasse
+        -String role
+        -String equipeFavorite
+        +getId() int
+        +getEmail() String
+        +getRole() String
     }
-    namespace DAO {
-        class DatabaseConnection {
-            -String URL$
-            -String USER$
-            -String PASSWORD$
-            +getConnection() Connection$
-        }
-        class UtilisateurDAO {
-            +authentifier(email, motDePasse) Utilisateur
-            +emailExiste(email) boolean
-            +ajouter(u) int
-            +getAllUsers() List
-            +updateProfil(id, nom, prenom, equipe) boolean
-            +updateMotDePasse(id, hash) boolean
-            +deleteUtilisateur(id) boolean
-        }
-        class MatchDAO {
-            +getAllMatches() List
-            +addMatch(m)
-            +updateMatch(m) boolean
-            +deleteMatch(id)
-        }
-        class TicketDAO {
-            +getAllTickets() List
-            +getTicketsByMatchId(matchId) List
-            +getDisponible(ticketId) int
-            +addTicket(t) boolean
-            +deleteTicket(id) boolean
-        }
-        class StadeDAO {
-            +getAllStades() List
-            +ajouter(s) boolean
-            +supprimer(id) boolean
-        }
-        class ReservationDAO {
-            +getAllReservations() List
-            +getReservationsByUtilisateurId(id) List
-            +ajouter(r) boolean
-            +supprimer(id) boolean
-            +existeDeja(utilisateurId, ticketId) boolean
-            +getTotalParMatch(utilisateurId, matchId) int
-            +getBilletsParMatch() Map
-        }
-        class PaiementDAO {
-            +getAllPaiements() List
-            +ajouter(p) boolean
-            +updateStatut(id, statut) boolean
-            +getTotalRevenu() double
-            +countEnAttente() int
-            +getStatutsRepartition() Map
-        }
-        class JournalDAO {
-            +enregistrer(email, action, detail, statut)
-            +getJournal() List
-        }
+    class Stade {
+        -int id
+        -String nom
+        -String ville
+        -int capacite
+        -String localisation
+        +getId() int
+        +getNom() String
     }
-    namespace Utilitaires {
-        class PasswordUtils {
-            -int ITERATIONS$
-            -int KEY_LENGTH$
-            -String ALGORITHM$
-            +hasher(motDePasse) String$
-            +verifier(motDePasse, hashStocke) boolean$
-            +validerComplexite(motDePasse) String$
-        }
-        class ExportService {
-            +exporterReservations(fichier, donnees, isAdmin)$
-            -escapeHtml(s) String$
-        }
+    class MatchFootball {
+        -int id
+        -String equipeDomicile
+        -String equipeExterieure
+        -int stadeId
+        -String stadeNom
+        -Date dateMatch
+        +getId() int
+        +getStadeNom() String
     }
-    namespace Controleurs {
-        class LoginController {
-            -int MAX_TENTATIVES$
-            -long DUREE_BLOCAGE_MS$
-            -Map tentatives
-            -Map blocages
-            +seConnecter()
-            +allerInscription()
-        }
-        class InscriptionController {
-            +sInscrire()
-            +allerLogin()
-        }
-        class MainController {
-            +initialize()
-            +afficherMatchs()
-            +ajouterMatch()
-            +modifierMatch()
-            +supprimerMatch()
-            +ajouterReservation()
-            +supprimerReservation()
-            +chargerPaiements()
-            +validerPaiement()
-            +annulerPaiement()
-            +afficherJournal()
-            +changerMotDePasse()
-            +modifierProfil()
-            +supprimerCompte()
-            +exporterPDF()
-        }
+    class Ticket {
+        -int id
+        -int matchId
+        -double prix
+        -String categorie
+        -String zone
+        -int quantite
+        +getId() int
+        +getPrix() double
+        +getCategorie() String
+    }
+    class Reservation {
+        -int id
+        -int utilisateurId
+        -int ticketId
+        -int quantite
+        -Date dateReservation
+        -String statutPaiement
+        +getId() int
+        +getStatutPaiement() String
+    }
+    class Paiement {
+        -int id
+        -int reservationId
+        -double montant
+        -Date datePaiement
+        -String modePaiement
+        -String statut
+        +getId() int
+        +getMontant() double
+        +getStatut() String
+    }
+
+    %% ── DAO ───────────────────────────────────────────────────
+    class DatabaseConnection {
+        -String URL$
+        -String USER$
+        -String PASSWORD$
+        +getConnection() Connection$
+    }
+    class UtilisateurDAO {
+        +authentifier(email, motDePasse) Utilisateur
+        +emailExiste(email) boolean
+        +ajouter(u) int
+        +getAllUsers() List
+        +updateProfil(id, nom, prenom, equipe) boolean
+        +updateMotDePasse(id, hash) boolean
+        +deleteUtilisateur(id) boolean
+    }
+    class MatchDAO {
+        +getAllMatches() List
+        +addMatch(m)
+        +updateMatch(m) boolean
+        +deleteMatch(id)
+    }
+    class TicketDAO {
+        +getAllTickets() List
+        +getTicketsByMatchId(matchId) List
+        +getDisponible(ticketId) int
+        +addTicket(t) boolean
+        +deleteTicket(id) boolean
+    }
+    class StadeDAO {
+        +getAllStades() List
+        +ajouter(s) boolean
+        +supprimer(id) boolean
+    }
+    class ReservationDAO {
+        +getAllReservations() List
+        +getReservationsByUtilisateurId(id) List
+        +ajouter(r) boolean
+        +supprimer(id) boolean
+        +existeDeja(utilisateurId, ticketId) boolean
+        +getTotalParMatch(utilisateurId, matchId) int
+        +getBilletsParMatch() Map
+    }
+    class PaiementDAO {
+        +getAllPaiements() List
+        +ajouter(p) boolean
+        +updateStatut(id, statut) boolean
+        +getTotalRevenu() double
+        +countEnAttente() int
+        +getStatutsRepartition() Map
+    }
+    class JournalDAO {
+        +enregistrer(email, action, detail, statut)
+        +getJournal() List
+    }
+
+    %% ── Utilitaires ───────────────────────────────────────────
+    class PasswordUtils {
+        -int ITERATIONS$
+        -int KEY_LENGTH$
+        -String ALGORITHM$
+        +hasher(motDePasse) String$
+        +verifier(motDePasse, hashStocke) boolean$
+        +validerComplexite(motDePasse) String$
+    }
+    class ExportService {
+        +exporterReservations(fichier, donnees, isAdmin)$
+        -escapeHtml(s) String$
+    }
+
+    %% ── Controleurs ───────────────────────────────────────────
+    class LoginController {
+        -int MAX_TENTATIVES$
+        -long DUREE_BLOCAGE_MS$
+        -Map tentatives
+        -Map blocages
+        +seConnecter()
+        +allerInscription()
+    }
+    class InscriptionController {
+        +sInscrire()
+        +allerLogin()
+    }
+    class MainController {
+        +initialize()
+        +afficherMatchs()
+        +ajouterMatch()
+        +modifierMatch()
+        +supprimerMatch()
+        +ajouterReservation()
+        +supprimerReservation()
+        +chargerPaiements()
+        +validerPaiement()
+        +annulerPaiement()
+        +afficherJournal()
+        +changerMotDePasse()
+        +modifierProfil()
+        +supprimerCompte()
+        +exporterPDF()
     }
 
     HelloApplication ..> LoginController : charge
@@ -298,77 +297,69 @@ sequenceDiagram
     actor U as Utilisateur
     participant LC as LoginController
     participant DAO as UtilisateurDAO
-    participant DBUSER as "MySQL (utilisateur)"
+    participant DB as BDD utilisateur
     participant JDAO as JournalDAO
-    participant JDDB as "MySQL (journal)"
+    participant JDB as BDD journal
     participant PU as PasswordUtils
     participant S as Session
     participant MC as MainController
 
     U->>LC: saisit email + mot de passe et clique Se connecter
     activate LC
-    LC->>LC: verifier champs non vides
 
     alt champs vides
         LC-->>U: Veuillez remplir tous les champs.
-    end
-
-    LC->>LC: verifier si compte bloque (Map blocages)
-
-    alt compte bloque moins de 2 min
+    else compte bloque moins de 2 min
         LC-->>U: Compte bloque. Reessayez dans X secondes.
-        deactivate LC
-    end
+    else verification normale
+        LC->>DAO: authentifier(email, motDePasse)
+        activate DAO
+        DAO->>DB: SELECT * FROM utilisateur WHERE email = ?
+        activate DB
+        DB-->>DAO: ResultSet hash stocke
+        deactivate DB
+        DAO->>PU: verifier(motDePasse, hashStocke)
+        activate PU
+        Note right of PU: Decoupe le hash, recalcule PBKDF2 avec le meme sel, compare bit a bit XOR
+        PU-->>DAO: true / false
+        deactivate PU
+        DAO-->>LC: Utilisateur / null
+        deactivate DAO
 
-    LC->>DAO: authentifier(email, motDePasse)
-    activate DAO
-    DAO->>DBUSER: SELECT * FROM utilisateur WHERE email = ?
-    activate DBUSER
-    DBUSER-->>DAO: ResultSet (hash stocke)
-    deactivate DBUSER
-    DAO->>PU: verifier(motDePasse, hashStocke)
-    activate PU
-    Note right of PU: Decoupe le hash, recalcule PBKDF2 avec le meme sel, compare bit a bit (XOR)
-    PU-->>DAO: true / false
-    deactivate PU
-    DAO-->>LC: Utilisateur / null
-    deactivate DAO
-
-    alt authentification echouee
-        LC->>LC: tentatives[email]++
-
-        alt tentatives >= 3
-            LC->>LC: blocages[email] = now()
-            LC->>JDAO: enregistrer(email, COMPTE_BLOQUE, 3 tentatives echouees, ECHEC)
+        alt authentification echouee
+            LC->>LC: tentatives[email]++
+            alt tentatives >= 3
+                LC->>LC: blocages[email] = now()
+                LC->>JDAO: enregistrer COMPTE_BLOQUE ECHEC
+                activate JDAO
+                JDAO->>JDB: INSERT INTO journal_activite
+                deactivate JDAO
+                LC-->>U: Trop de tentatives. Compte bloque 2 minutes.
+            else tentatives < 3
+                LC->>JDAO: enregistrer CONNEXION_ECHEC ECHEC
+                activate JDAO
+                JDAO->>JDB: INSERT INTO journal_activite
+                deactivate JDAO
+                LC-->>U: Email ou mot de passe incorrect. X tentative(s) restante(s)
+            end
+        else authentification reussie
+            LC->>LC: tentatives.remove + blocages.remove
+            LC->>JDAO: enregistrer CONNEXION SUCCES
             activate JDAO
-            JDAO->>JDDB: INSERT INTO journal_activite
+            JDAO->>JDB: INSERT INTO journal_activite
             deactivate JDAO
-            LC-->>U: Trop de tentatives. Compte bloque 2 minutes.
-        else tentatives < 3
-            LC->>JDAO: enregistrer(email, CONNEXION_ECHEC, Mot de passe incorrect, ECHEC)
-            activate JDAO
-            JDAO->>JDDB: INSERT INTO journal_activite
-            deactivate JDAO
-            LC-->>U: Email ou mot de passe incorrect. (X tentative(s) restante(s))
+            LC->>S: connecter(utilisateur)
+            activate S
+            S->>S: utilisateurConnecte = utilisateur
+            deactivate S
+            LC->>MC: changerScene(main-view.fxml)
+            activate MC
+            MC->>S: getUtilisateur() + isAdmin()
+            S-->>MC: utilisateur + role
+            MC->>MC: afficher/cacher panneaux selon le role
+            MC-->>U: Affiche l'application principale
+            deactivate MC
         end
-
-    else authentification reussie
-        LC->>LC: tentatives.remove(email), blocages.remove(email)
-        LC->>JDAO: enregistrer(email, CONNEXION, Connexion reussie, SUCCES)
-        activate JDAO
-        JDAO->>JDDB: INSERT INTO journal_activite
-        deactivate JDAO
-        LC->>S: connecter(utilisateur)
-        activate S
-        S->>S: utilisateurConnecte = utilisateur
-        deactivate S
-        LC->>MC: changerScene(main-view.fxml)
-        activate MC
-        MC->>S: getUtilisateur() + isAdmin()
-        S-->>MC: utilisateur + role
-        MC->>MC: afficher/cacher panneaux selon le role
-        MC-->>U: Affiche l'application principale
-        deactivate MC
     end
 
     deactivate LC
